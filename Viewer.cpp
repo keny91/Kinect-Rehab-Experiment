@@ -4,6 +4,21 @@
 *   Copyright (C) 2012 PrimeSense Ltd.                                         *
 *                                                                              *
 *******************************************************************************/
+
+
+/*
+DEPTH STREAM has coordinates X,Y,Z
+	The 0 (origin) of X is the LEFT of the image
+	The 0 (origin) of Y is the TOP of the image
+	The 0 (origin) of Z is the DEPTH measured in PixelFormat
+				PIXEL_FORMAT_DEPTH_1_MM 	
+				PIXEL_FORMAT_DEPTH_100_UM
+
+WORLD COORDINATES has coordinates X,Y,Z in milimiters
+*/
+
+
+// INCLUDES
 #if (defined _WIN32)
 #define PRIu64 "llu"
 #else
@@ -13,6 +28,7 @@
 
 #include "Viewer.h"
 
+// Multiplatform include
 #if (ONI_PLATFORM == ONI_PLATFORM_MACOSX)
 #include <glut.h>
 #else
@@ -21,17 +37,23 @@
 
 #include <C:\Users\luish\Desktop\OpenNI set up\NiteSampleUtilities.h>
 
+
+// Glut parameters
 #define GL_WIN_SIZE_X	1280
 #define GL_WIN_SIZE_Y	1024
 #define TEXTURE_SIZE	512
 
+
 #define DEFAULT_DISPLAY_MODE	DISPLAY_MODE_DEPTH
 
+
+// what happens if I change this?
 #define MIN_NUM_CHUNKS(data_size, chunk_size)	((((data_size)-1) / (chunk_size) + 1))
 #define MIN_CHUNKS_SIZE(data_size, chunk_size)	(MIN_NUM_CHUNKS(data_size, chunk_size) * (chunk_size))
 
 SampleViewer* SampleViewer::ms_self = NULL;
 
+// Modify this params to change the view
 bool g_drawSkeleton = true;
 bool g_drawCenterOfMass = false;
 bool g_drawStatusLabel = true;
@@ -47,6 +69,7 @@ const int g_poseTimeoutToExit = 2000;
 
 void SampleViewer::glutIdle()
 {
+	
 	glutPostRedisplay();
 }
 void SampleViewer::glutDisplay()
@@ -119,13 +142,27 @@ openni::Status SampleViewer::Init(int argc, char **argv)
 	return InitOpenGL(argc, argv);
 
 }
+
+
+
+/*
+MODIFICATION APPLIED:
+
+if calibration already applied
+
+
+*/
 openni::Status SampleViewer::Run()	//Does not return
 {
+
+
 	glutMainLoop();
 
 	return openni::STATUS_OK;
 }
 
+
+// LABELS AND COLORS
 float Colors[][3] = { { 1, 0, 0 },{ 0, 1, 0 },{ 0, 0, 1 },{ 1, 1, 1 } };
 int colorCount = 3;
 
@@ -305,6 +342,7 @@ void DrawLimb(nite::UserTracker* pUserTracker, const nite::SkeletonJoint& joint1
 	}
 	glVertexPointer(3, GL_FLOAT, 0, coordinates + 3);
 	glDrawArrays(GL_POINTS, 0, 1);
+	
 }
 void DrawSkeleton(nite::UserTracker* pUserTracker, const nite::UserData& userData)
 {
@@ -442,6 +480,8 @@ void SampleViewer::Display()
 	glEnable(GL_TEXTURE_2D);
 	glBegin(GL_QUADS);
 
+
+	// Set resolution
 	g_nXRes = depthFrame.getVideoMode().getResolutionX();
 	g_nYRes = depthFrame.getVideoMode().getResolutionY();
 

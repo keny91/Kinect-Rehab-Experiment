@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 {
 	openni::Status rc = openni::STATUS_OK;
 
-	SampleViewer sampleViewer("User Viewer");
+	SampleViewer sampleViewer("Rehabilitation with Kinect");
 
 	rc = sampleViewer.Init(argc, argv);
 	if (rc != openni::STATUS_OK)
