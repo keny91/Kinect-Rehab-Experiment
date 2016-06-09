@@ -155,9 +155,11 @@ if calibration already applied
 openni::Status SampleViewer::Run()	//Does not return
 {
 
-
+	while (1) {
+		std::cout << "only one time";
 	glutMainLoop();
-
+	}
+	std::cout << "only 2 time";
 	return openni::STATUS_OK;
 }
 

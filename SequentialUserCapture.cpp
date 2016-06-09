@@ -8,6 +8,8 @@ LIST TO DO:
 - START ON GESTURE / INPUT / COUNTDOWN
 - WHEN NO MORE BODIES AT SCENE/ USER UNDETECTED FOR A NUMBER OF FRAMES -> change ID
 
+
+-REDUNDANT VALUES IN SequentialUserCapture -> we store present and nFrames yet we use the global variables to refer to those
 */
 
 
@@ -56,17 +58,19 @@ public:
 
 
 /*******************
-SKELETON:
+	SKELETON:
 **********************/
 
 NTSkeleton::NTSkeleton() {
-	// IDEALLY you want this list to be outside the Object
-	// Create a List of the possible Joints
 
+
+	
+	// Create a List of the possible Joints
 	joints = new NTSkeletonJoint[NITE_JOINT_COUNT]();
 	state = NITE_SKELETON_NONE;
 	//state = nite::SKELETON_NONE;
 	
+	// All skeletons will follow the same number of joints
 	JointList = new JointType[NITE_JOINT_COUNT]();
 	JointList[0] = JOINT_HEAD;
 	JointList[1] = JOINT_LEFT_ELBOW;
@@ -96,7 +100,6 @@ NTSkeleton::~NTSkeleton() {
 }
 
 /***ConversionStateSkelly2Nite:************************************
-
 	Convert from "SkeletonState" to "NiteSkeletonState"
 	required to avoid linker errors.
 *******************************************************************/
@@ -169,11 +172,10 @@ void NTSkeleton::CopyFromNTSkeleton(NTSkeleton *theSkeleton) {
 }
 
 
-
-/*
-SetSkelletonNull:
+/***SetSkelletonNull:**********************************************
 Clear the data in a skeleton.
-*/
+No memory deletion is made.
+*******************************************************************/
 void NTSkeleton::SetSkelletonNull() {
 	for (int i = 0; i < NITE_JOINT_COUNT; i++)
 		joints[i].ClearJoint();
@@ -193,13 +195,15 @@ NTSkeletonJoint::NTSkeletonJoint() {
 	position.x = 0;
 	position.y = 0;
 	position.z = 0;
-
 	orientation.x = 0;
 	orientation.y = 0;
 	orientation.z = 0;
 	orientation.w = 0;
-
 }
+
+/***SetValues:***************************************************
+Set values, instead of accessing the attributes directly
+*******************************************************************/
 
 void NTSkeletonJoint::SetJointPosition(NitePoint3f pos, float conf) {
 	position = pos;
@@ -211,6 +215,11 @@ void NTSkeletonJoint::SetJointOrientation(NiteQuaternion ori, float conf) {
 	orientation = ori;
 }
 
+
+/***SetJoint:***************************************************
+Give a NTSkeletonJoint the Orientation, Position, Confidences
+of a SkeletonJoint source.
+*******************************************************************/
 void NTSkeletonJoint::SetJoint(SkeletonJoint theJoint) {
 	jointType = theJoint.getType();
 	SetJointOrientation(theJoint.getOrientation(), theJoint.getOrientationConfidence());
@@ -247,7 +256,6 @@ void NTSkeletonJoint::CopyFromNTSkeletonJoint(NTSkeletonJoint theSJoint) {
 Clears Orientation, Position, Confidences
 BUT NOT TYPE of the Joint
 *******************************************************************/
-
 void NTSkeletonJoint::ClearJoint() {
 	position.x = 0;
 	position.y = 0;
@@ -277,7 +285,6 @@ NTSkeletonJoint::~NTSkeletonJoint() {
 SequentialUserCapture
 ****************************************/ 
 
-
 // Empty Constructor
 SequentialUserCapture::SequentialUserCapture(){
 	numberOfCapturedElements = 0; 
@@ -290,7 +297,7 @@ SequentialUserCapture::SequentialUserCapture(){
 }
 
 
-SequentialUserCapture::SequentialUserCapture(int nElements, int focusedElement)
+SequentialUserCapture::SequentialUserCapture(int nElements, int focusedElement, int theId)
 {
 	// initialize the array
 	StoredSkeletons = new NTSkeleton *[nElements]();
@@ -299,48 +306,7 @@ SequentialUserCapture::SequentialUserCapture(int nElements, int focusedElement)
 	numberOfCapturedElements = nElements;
 	PresentElement = focusedElement;
 	LifeSpan = 0;
-	
-	ID = -1;
-	
-	/*
-	JOINT_HEAD
-	LEFT_ELBOW
-	LEFT_FOOT
-	LEFT_HAND
-	LEFT_HIP
-	LEFT_KNEE
-	LEFT_SHOULDER
-	NECK
-	RIGHT_ELBOW
-	RIGHT_FOOT
-	RIGHT_HAND
-	RIGHT_HIP
-	RIGHT_KNEE
-	RIGHT_SHOULDER
-	TORSO
-	
-
-	// IDEALLY you want this list to be outside the Object
-	// Create a List of the possible Joints
-
-	JointList = new JointType[NITE_JOINT_COUNT]();
-	JointList[0] = JOINT_HEAD;
-	JointList[1] = JOINT_LEFT_ELBOW;
-	JointList[2] = JOINT_LEFT_FOOT;
-	JointList[3] = JOINT_LEFT_HAND;
-	JointList[4] = JOINT_LEFT_HIP;
-	JointList[5] = JOINT_LEFT_KNEE;
-	JointList[6] = JOINT_LEFT_SHOULDER;
-	JointList[7] = JOINT_NECK;
-	JointList[8] = JOINT_RIGHT_ELBOW;
-	JointList[9] = JOINT_RIGHT_FOOT;
-	JointList[10] = JOINT_RIGHT_HAND;
-	JointList[11] = JOINT_RIGHT_HIP;
-	JointList[12] = JOINT_RIGHT_KNEE;
-	JointList[13] = JOINT_RIGHT_SHOULDER;
-	JointList[14] = JOINT_TORSO;
-	*/
-
+	ID = theId;
 }
 
 
@@ -385,7 +351,8 @@ NTSkeleton* SequentialUserCapture::getUserSkeletonAt(int pos) {
 
 
 /***CopySkeleton:***************************************************
-Get data from all joints of the previous skeleton
+Get data from all joints of the previous skeleton 
+provide the one to be copied and the position in the array to be copied
 *******************************************************************/
 void SequentialUserCapture::CopySkeletonToPosition(int SkeletonPos, Skeleton *theSkeleton) {
 	for (int counter = 0; counter <NITE_JOINT_COUNT; counter++)
@@ -394,7 +361,9 @@ void SequentialUserCapture::CopySkeletonToPosition(int SkeletonPos, Skeleton *th
 	
 }
 
-
+/***setUserSkeletonAt:***************************************************
+UNNECESSARY FOR NOW
+*******************************************************************/
 void SequentialUserCapture::setUserSkeletonAt(int SkeletonPos, Skeleton *theSkeleton) {
 	CopySkeletonToPosition(SkeletonPos, theSkeleton);
 }
@@ -409,11 +378,11 @@ void SequentialUserCapture::OnNextFrameArrival(Skeleton *theSkeleton) {
 
 	// Take out the oldest frame to make room for a new one
 	//if it exists
-	if (StoredSkeletons[NUMBER_OF_FRAMES - 1]->state != NITE_SKELETON_NONE)
+	if (StoredSkeletons[numberOfCapturedElements - 1]->state != NITE_SKELETON_NONE)
 		//SET NULL INSTEAD OF DESTROY
 		//delete StoredSkeletons[NUMBER_OF_FRAMES-1];
 		//SetSkelletonNullAt(NUMBER_OF_FRAMES - 1);
-		StoredSkeletons[(NUMBER_OF_FRAMES - 1)]->SetSkelletonNull();
+		StoredSkeletons[(numberOfCapturedElements - 1)]->SetSkelletonNull();
 
 
 	// shift from 0 to NUMBER_OF_FRAMES-2 -> +1 position
@@ -425,6 +394,7 @@ void SequentialUserCapture::OnNextFrameArrival(Skeleton *theSkeleton) {
 
 	//Get the new Skeleton coming to the 0 Position
 	CopySkeletonToPosition(0, theSkeleton);
+	LifeSpan++;
 
 }
 

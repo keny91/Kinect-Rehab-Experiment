@@ -21,11 +21,13 @@
   <ItemGroup>
     <ClCompile Include="Ajustments.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RecordLog.cpp" />
     <ClCompile Include="SequentialUserCapture.cpp" />
     <ClCompile Include="Viewer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ajustments.h" />
+    <ClInclude Include="RecordLog.h" />
     <ClInclude Include="SequentialUserCapture.h" />
     <ClInclude Include="Viewer.h" />
   </ItemGroup>

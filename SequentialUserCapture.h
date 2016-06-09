@@ -80,7 +80,7 @@ class SequentialUserCapture
 {
 public:
 	SequentialUserCapture();
-	SequentialUserCapture(int nElements, int focusedElement);
+	SequentialUserCapture(int nElements, int focusedElement, int theId);
 	~SequentialUserCapture();
 	//struct NTSkeleton** StoredSkeletons;
 	NTSkeleton** StoredSkeletons;

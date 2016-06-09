@@ -11,6 +11,7 @@
 #define _NITE_USER_VIEWER_H_
 
 #include "NiTE.h"
+#include <iostream>
 
 #define MAX_DEPTH 10000
 
