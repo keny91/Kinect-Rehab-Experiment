@@ -51,9 +51,10 @@ private:
 
 	openni::Device		m_device;
 	nite::UserTracker* m_pUserTracker;
-
+	//nite::UserTracker::
 	nite::UserId m_poseUser;
 	uint64_t m_poseTime;
+	
 };
 
 
