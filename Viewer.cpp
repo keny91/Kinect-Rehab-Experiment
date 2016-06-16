@@ -4,21 +4,6 @@
 *   Copyright (C) 2012 PrimeSense Ltd.                                         *
 *                                                                              *
 *******************************************************************************/
-
-
-/*
-DEPTH STREAM has coordinates X,Y,Z
-	The 0 (origin) of X is the LEFT of the image
-	The 0 (origin) of Y is the TOP of the image
-	The 0 (origin) of Z is the DEPTH measured in PixelFormat
-				PIXEL_FORMAT_DEPTH_1_MM 	
-				PIXEL_FORMAT_DEPTH_100_UM
-
-WORLD COORDINATES has coordinates X,Y,Z in milimiters
-*/
-
-
-// INCLUDES
 #if (defined _WIN32)
 #define PRIu64 "llu"
 #else
@@ -28,38 +13,31 @@ WORLD COORDINATES has coordinates X,Y,Z in milimiters
 
 #include "Viewer.h"
 
-// Multiplatform include
 #if (ONI_PLATFORM == ONI_PLATFORM_MACOSX)
-#include <glut.h>
+#include <GLUT/glut.h>
 #else
 #include <C:\Users\luish\Desktop\OpenNI set up\GL\glut.h>
 #endif
 
 #include <C:\Users\luish\Desktop\OpenNI set up\NiteSampleUtilities.h>
 
-
-// Glut parameters
 #define GL_WIN_SIZE_X	1280
 #define GL_WIN_SIZE_Y	1024
 #define TEXTURE_SIZE	512
 
-
 #define DEFAULT_DISPLAY_MODE	DISPLAY_MODE_DEPTH
 
-
-// what happens if I change this?
 #define MIN_NUM_CHUNKS(data_size, chunk_size)	((((data_size)-1) / (chunk_size) + 1))
 #define MIN_CHUNKS_SIZE(data_size, chunk_size)	(MIN_NUM_CHUNKS(data_size, chunk_size) * (chunk_size))
 
 SampleViewer* SampleViewer::ms_self = NULL;
 
-// Modify this params to change the view
 bool g_drawSkeleton = true;
 bool g_drawCenterOfMass = false;
 bool g_drawStatusLabel = true;
 bool g_drawBoundingBox = false;
-bool g_drawBackground = true;
-bool g_drawDepth = true;
+bool g_drawBackground = false;
+bool g_drawDepth = false;
 bool g_drawFrameId = false;
 
 int g_nXRes = 0, g_nYRes = 0;
@@ -69,7 +47,6 @@ const int g_poseTimeoutToExit = 2000;
 
 void SampleViewer::glutIdle()
 {
-	
 	glutPostRedisplay();
 }
 void SampleViewer::glutDisplay()
@@ -84,6 +61,7 @@ void SampleViewer::glutKeyboard(unsigned char key, int x, int y)
 SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 {
 	ms_self = this;
+	theRecording = new RecordLog("OutputLog");
 	strncpy(m_strSampleName, strSampleName, ONI_MAX_STR);
 	m_pUserTracker = new nite::UserTracker;
 }
@@ -106,6 +84,7 @@ void SampleViewer::Finalize()
 openni::Status SampleViewer::Init(int argc, char **argv)
 {
 	m_pTexMap = NULL;
+	theRecording->StartRecording();
 
 	openni::Status rc = openni::OpenNI::initialize();
 	if (rc != openni::STATUS_OK)
@@ -142,29 +121,13 @@ openni::Status SampleViewer::Init(int argc, char **argv)
 	return InitOpenGL(argc, argv);
 
 }
-
-
-
-/*
-MODIFICATION APPLIED:
-
-if calibration already applied
-
-
-*/
 openni::Status SampleViewer::Run()	//Does not return
 {
-
-	while (1) {
-		std::cout << "only one time";
 	glutMainLoop();
-	}
-	std::cout << "only 2 time";
+
 	return openni::STATUS_OK;
 }
 
-
-// LABELS AND COLORS
 float Colors[][3] = { { 1, 0, 0 },{ 0, 1, 0 },{ 0, 0, 1 },{ 1, 1, 1 } };
 int colorCount = 3;
 
@@ -306,14 +269,19 @@ void DrawLimb(nite::UserTracker* pUserTracker, const nite::SkeletonJoint& joint1
 	coordinates[3] *= GL_WIN_SIZE_X / (float)g_nXRes;
 	coordinates[4] *= GL_WIN_SIZE_Y / (float)g_nYRes;
 
+
+	cout << joint1.getType() << "  ---  " << joint2.getType()<<endl;
+	// IF SURE, HIGH CONFIDENCE -> PINK
 	if (joint1.getPositionConfidence() == 1 && joint2.getPositionConfidence() == 1)
 	{
 		glColor3f(1.0f - Colors[color][0], 1.0f - Colors[color][1], 1.0f - Colors[color][2]);
 	}
+	// IF VERY UNSURE, 0 CONFIDENCE -> dont display
 	else if (joint1.getPositionConfidence() < 0.5f || joint2.getPositionConfidence() < 0.5f)
 	{
 		return;
 	}
+	// IF UNSURE, MEDIUM CONFIDENCE -> GREY
 	else
 	{
 		glColor3f(.5, .5, .5);
@@ -344,7 +312,6 @@ void DrawLimb(nite::UserTracker* pUserTracker, const nite::SkeletonJoint& joint1
 	}
 	glVertexPointer(3, GL_FLOAT, 0, coordinates + 3);
 	glDrawArrays(GL_POINTS, 0, 1);
-	
 }
 void DrawSkeleton(nite::UserTracker* pUserTracker, const nite::UserData& userData)
 {
@@ -365,6 +332,7 @@ void DrawSkeleton(nite::UserTracker* pUserTracker, const nite::UserData& userDat
 	DrawLimb(pUserTracker, userData.getSkeleton().getJoint(nite::JOINT_TORSO), userData.getSkeleton().getJoint(nite::JOINT_RIGHT_HIP), userData.getId() % colorCount);
 
 	DrawLimb(pUserTracker, userData.getSkeleton().getJoint(nite::JOINT_LEFT_HIP), userData.getSkeleton().getJoint(nite::JOINT_RIGHT_HIP), userData.getId() % colorCount);
+
 
 	DrawLimb(pUserTracker, userData.getSkeleton().getJoint(nite::JOINT_LEFT_HIP), userData.getSkeleton().getJoint(nite::JOINT_LEFT_KNEE), userData.getId() % colorCount);
 	DrawLimb(pUserTracker, userData.getSkeleton().getJoint(nite::JOINT_LEFT_KNEE), userData.getSkeleton().getJoint(nite::JOINT_LEFT_FOOT), userData.getId() % colorCount);
@@ -476,13 +444,15 @@ void SampleViewer::Display()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_nTexMapX, m_nTexMapY, 0, GL_RGB, GL_UNSIGNED_BYTE, m_pTexMap);
 
 	// Display the OpenGL texture map
-	glColor4f(1, 1, 1, 1);
+	// CHANGES THE COLOR OF THE BACKGROUND DISPLAY
+	glColor4f(0, 0, 0, 0);
+
+	/*drab background here*/
+
 
 	glEnable(GL_TEXTURE_2D);
 	glBegin(GL_QUADS);
 
-
-	// Set resolution
 	g_nXRes = depthFrame.getVideoMode().getResolutionX();
 	g_nYRes = depthFrame.getVideoMode().getResolutionY();
 
@@ -531,6 +501,7 @@ void SampleViewer::Display()
 			if (users[i].getSkeleton().getState() == nite::SKELETON_TRACKED && g_drawSkeleton)
 			{
 				DrawSkeleton(m_pUserTracker, user);
+				theRecording->InsertRegisterSkeleton(user.getSkeleton(), user.getId(), 1);
 			}
 		}
 

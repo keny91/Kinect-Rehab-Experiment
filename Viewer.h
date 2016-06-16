@@ -1,17 +1,18 @@
 /*******************************************************************************
 *                                                                              *
 *   PrimeSense NiTE 2.0 - User Viewer Sample                                   *
-*   Copyright (C) 2012 PrimeSense Ltd.                                         *
+*   Copyright(C) 2012 PrimeSense Ltd.                                         *
 *                                                                              *
 *******************************************************************************/
-
-// COMMENT
 
 #ifndef _NITE_USER_VIEWER_H_
 #define _NITE_USER_VIEWER_H_
 
 #include "NiTE.h"
 #include <iostream>
+#include "RecordLog.h"
+
+using namespace std;
 
 #define MAX_DEPTH 10000
 
@@ -20,7 +21,7 @@ class SampleViewer
 public:
 	SampleViewer(const char* strSampleName);
 	virtual ~SampleViewer();
-
+	RecordLog* theRecording;
 	virtual openni::Status Init(int argc, char **argv);
 	virtual openni::Status Run();	//Does not return
 
@@ -52,10 +53,9 @@ private:
 
 	openni::Device		m_device;
 	nite::UserTracker* m_pUserTracker;
-	//nite::UserTracker::
+
 	nite::UserId m_poseUser;
 	uint64_t m_poseTime;
-	
 };
 
 
