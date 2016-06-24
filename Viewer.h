@@ -33,7 +33,7 @@ protected:
 
 	virtual openni::Status InitOpenGL(int argc, char **argv);
 	void InitOpenGLHooks();
-
+	float GetDistanceBetweenJoints(nite::SkeletonJoint a, nite::SkeletonJoint b);
 	void Finalize();
 
 private:

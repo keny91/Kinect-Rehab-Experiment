@@ -74,6 +74,18 @@ SampleViewer::~SampleViewer()
 	ms_self = NULL;
 }
 
+float SampleViewer::GetDistanceBetweenJoints(nite::SkeletonJoint JointA, nite::SkeletonJoint JointB) {
+	nite::Point3f pos1 = JointA.getPosition();
+	nite::Point3f pos2 = JointB.getPosition();
+
+	float xdif, ydif, zdif, dist;
+	xdif = pos1.x - pos2.x;
+	ydif = pos1.y - pos2.y;
+	zdif = pos1.z - pos2.z;
+	dist = sqrt(pow((xdif), 2) + pow((ydif), 2) + pow((zdif), 2));
+	return dist;
+}
+
 void SampleViewer::Finalize()
 {
 	delete m_pUserTracker;
@@ -84,7 +96,7 @@ void SampleViewer::Finalize()
 openni::Status SampleViewer::Init(int argc, char **argv)
 {
 	m_pTexMap = NULL;
-	theRecording->StartRecording();
+	//theRecording->StartRecording();
 
 	openni::Status rc = openni::OpenNI::initialize();
 	if (rc != openni::STATUS_OK)
@@ -270,7 +282,8 @@ void DrawLimb(nite::UserTracker* pUserTracker, const nite::SkeletonJoint& joint1
 	coordinates[4] *= GL_WIN_SIZE_Y / (float)g_nYRes;
 
 
-	cout << joint1.getType() << "  ---  " << joint2.getType()<<endl;
+	//cout << joint1.getType() << "  ---  " << joint2.getType()<<endl;
+
 	// IF SURE, HIGH CONFIDENCE -> PINK
 	if (joint1.getPositionConfidence() == 1 && joint2.getPositionConfidence() == 1)
 	{
@@ -501,7 +514,22 @@ void SampleViewer::Display()
 			if (users[i].getSkeleton().getState() == nite::SKELETON_TRACKED && g_drawSkeleton)
 			{
 				DrawSkeleton(m_pUserTracker, user);
-				theRecording->InsertRegisterSkeleton(user.getSkeleton(), user.getId(), 1);
+				//RECORDING HERE
+				//theRecording->InsertRegisterSkeleton(user.getSkeleton(), user.getId(), 1);
+
+				cout << "THE DISTANCE BETWEEN HANDS IS:"<<GetDistanceBetweenJoints(user.getSkeleton().getJoint(nite::JOINT_LEFT_HAND), user.getSkeleton().getJoint(nite::JOINT_RIGHT_HAND)) << endl;
+				//RECORDING HERE
+				if (theRecording->isRecording) {
+					theRecording->InsertRegisterSkeleton(users[i].getSkeleton(), users[i].getId(), 1);
+					if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))>1000) {
+
+						theRecording->StopRecording();
+					}
+				}
+				else if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))<150) {
+
+						theRecording->StartRecording();					
+				}
 			}
 		}
 

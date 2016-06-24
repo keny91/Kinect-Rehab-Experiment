@@ -1,6 +1,29 @@
 #include "RecordLog.h"
 
 
+/*
+float SampleViewer::GetDistanceBetweenJoints(nite::SkeletonJoint JointA, nite::SkeletonJoint JointB) {
+nite::Point3f pos1 = JointA.getPosition();
+nite::Point3f pos2 = JointB.getPosition();
+
+float xdif, ydif, zdif, dist;
+xdif = pos1.x - pos2.x;
+ydif = pos1.y - pos2.y;
+zdif = pos1.z - pos2.z;
+dist = sqrt(pow((xdif), 2) + pow((ydif), 2) + pow((zdif), 2));
+return dist;
+}
+*/
+
+//cout << "THE DISTANCE BETWEEN HANDS IS:"<<GetDistanceBetweenJoints(user.getSkeleton().getJoint(nite::JOINT_LEFT_HAND), user.getSkeleton().getJoint(nite::JOINT_RIGHT_HAND));
+//RECORDING HERE
+/*
+if (theRecording->isRecording)
+theRecording->InsertRegisterSkeleton(users[i].getSkeleton(), users[i].getId(), 1);
+else if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))) {
+
+}
+*/
 
 RecordLog::RecordLog()
 {
@@ -78,6 +101,7 @@ void RecordLog::StartRecording() {
 }
 
 void RecordLog::StopRecording() {
+	theFile << "FileEnding" << endl;
 	theFile.close();
 	isRecording = false;
 }

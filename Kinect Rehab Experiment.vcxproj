@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Ajustments.cpp" />
+    <ClCompile Include="DTW3d.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RecordLog.cpp" />
     <ClCompile Include="SequentialUserCapture.cpp" />
@@ -27,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ajustments.h" />
+    <ClInclude Include="DTW3d.h" />
     <ClInclude Include="RecordLog.h" />
     <ClInclude Include="SequentialUserCapture.h" />
     <ClInclude Include="Viewer.h" />
