@@ -55,7 +55,7 @@ RecordLog::RecordLog()
 RecordLog::RecordLog(char* theName)
 {
 
-	cout << "" << endl;
+	//cout << "" << endl;
 	//char* postfix = ".bin";
 	char* postfix = ".txt";
 	char *newName = new char();
@@ -145,9 +145,11 @@ void RecordLog::InsertRegisterSkeleton(Skeleton theSkeleton, int frame, int Body
 	//frame check here...
 	theFile << frame << ";" <<BodyID << ";" << theSkeleton.getState() << endl;
 	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
-		theFile << theSkeleton.getJoint(JointList[i]).getPosition().x << ";" << theSkeleton.getJoint(JointList[i]).getPosition().z;
+		theFile << JointList[i] << ";";
 		//NO endl
-		theFile << theSkeleton.getJoint(JointList[i]).getOrientation().x << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().y << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().z << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().w;
+		theFile << theSkeleton.getJoint(JointList[i]).getPosition().x << ";" << theSkeleton.getJoint(JointList[i]).getPosition().y <<";" << theSkeleton.getJoint(JointList[i]).getPosition().z;
+		//NO endl
+		theFile << theSkeleton.getJoint(JointList[i]).getOrientation().x << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().y << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().z << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().w << ";";
 		//NO endl
 		theFile << theSkeleton.getJoint(JointList[i]).getPositionConfidence() << ";" << theSkeleton.getJoint(JointList[i]).getOrientationConfidence() << endl;
 		//endl
@@ -175,6 +177,86 @@ void RecordLog::StartReading() {
 	
 	theFile << "FileBeggining" << endl;
 }
+
+/***SeparateSingleJoint:************************************
+Convert from "SkeletonState" to "NiteSkeletonState"
+required to avoid linker errors.
+Order is:
+FileBeggining
+Frame/body/SkeletonState
+Joint1: JointType/Positions(3)/Orientation(4)/confidences(2)
+Joint2: ...
+...
+Frame/body/SkeletonState
+...
+*******************************************************************/
+void RecordLog::SeparateSingleJoint(JointType theType) {
+
+	if(!isRecording){
+
+	float posx, posy, posz, orix, oriy, oriz, confpos, confori;
+	int type;
+	//JointType type;
+
+	fstream file;
+	//char *prefix = "Joint_"; 
+	char *prefix = "./SingleJointRecord/Joint_";
+	char* postfix = ".txt";
+	char theName[30];
+	itoa(theType, theName,10);  // MAY CRASH
+	char *aName;
+	char *finalname;
+	//string theName = string(intStr);
+	strcpy_s(aName, strlen(prefix) + 1, prefix);
+	strcat_s(aName, strlen(prefix) + strlen(theName) + 1, theName);
+	strcat_s(finalname, strlen(aName) + strlen(postfix) + 1, postfix);
+
+	delete aName;
+
+	//Open reading file
+	theFile.open(name, ios::in);
+
+
+	//Open new Writting file
+	//theFile.open(finalname, ios::out);
+	file.open(finalname, ios::out);
+	//ifstream file("OutputLog.txt");
+
+
+	// until we reach end of reading file
+	
+	string  line;
+
+	while (getline(theFile, line)) {
+		stringstream linestream(line);
+		string data;
+
+		getline(linestream, data, ';');
+		linestream >> type >> posx >> posy >> posz >> orix >> oriy >> oriz >> confpos >> confori;
+
+
+		if (theType == type) {
+			theFile << posx << ";" << posy << ";" << posz <<endl;
+			//NO endl
+			/*
+			theFile << theSkeleton.getJoint(JointList[i]).getOrientation().x << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().y << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().z << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().w << ";";
+			//NO endl
+			theFile << theSkeleton.getJoint(JointList[i]).getPositionConfidence() << ";" << theSkeleton.getJoint(JointList[i]).getOrientationConfidence() << endl;
+			*/
+		}
+		
+	}
+
+	// close both
+	theFile.close(); // <-- carefull that we are not writting at the time
+	file.close();
+	}
+
+}
+
+
+
+
 
 /***ReadFrameRegister:************************************
 Read a whole set of joints allocated in the same frame

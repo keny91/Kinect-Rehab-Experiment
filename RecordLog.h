@@ -38,7 +38,7 @@ public:
 	void ReadFrameRegister(); // LINE BY LINE?
 	void EndReading();
 	void CreateEvaluationReport();
-
+	void RecordLog::SeparateSingleJoint(JointType theType);
 	Skeleton aSkeleton;
 
 private:
