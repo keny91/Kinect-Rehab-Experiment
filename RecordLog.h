@@ -29,6 +29,7 @@ public:
 	RecordLog(char* name);
 	~RecordLog();
 	bool isRecording;
+	int elapsedFrames;
 	void StartRecording();
 	void StopRecording();
 	void InsertRegisterSkeleton(Skeleton theSkeleton, int frameint, int BodyID);

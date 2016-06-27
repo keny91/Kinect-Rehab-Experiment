@@ -95,15 +95,27 @@ RecordLog::~RecordLog()
 
 void RecordLog::StartRecording() {
 	theFile.open(name, ios::out);
-	theFile << "FileBeggining" << endl;
+	theFile << "              " << endl;
 	isRecording = true;
+	elapsedFrames = 0;
 
 }
 
 void RecordLog::StopRecording() {
 	theFile << "FileEnding" << endl;
+	
+	
+
+	//Set the first line to the number of frames
+
+	theFile.clear();
+	theFile.seekg(0, ios::beg);
+	theFile << elapsedFrames;
 	theFile.close();
+
+	//Reset values
 	isRecording = false;
+	elapsedFrames = 0;
 }
 
 
@@ -147,13 +159,14 @@ void RecordLog::InsertRegisterSkeleton(Skeleton theSkeleton, int frame, int Body
 	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
 		theFile << JointList[i] << ";";
 		//NO endl
-		theFile << theSkeleton.getJoint(JointList[i]).getPosition().x << ";" << theSkeleton.getJoint(JointList[i]).getPosition().y <<";" << theSkeleton.getJoint(JointList[i]).getPosition().z;
+		theFile << theSkeleton.getJoint(JointList[i]).getPosition().x << ";" << theSkeleton.getJoint(JointList[i]).getPosition().y <<";" << theSkeleton.getJoint(JointList[i]).getPosition().z << ";";
 		//NO endl
 		theFile << theSkeleton.getJoint(JointList[i]).getOrientation().x << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().y << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().z << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().w << ";";
 		//NO endl
 		theFile << theSkeleton.getJoint(JointList[i]).getPositionConfidence() << ";" << theSkeleton.getJoint(JointList[i]).getOrientationConfidence() << endl;
 		//endl
 	}
+	elapsedFrames++;
 }
 
 
@@ -194,63 +207,136 @@ void RecordLog::SeparateSingleJoint(JointType theType) {
 
 	if(!isRecording){
 
-	float posx, posy, posz, orix, oriy, oriz, confpos, confori;
-	int type;
-	//JointType type;
 
-	fstream file;
-	//char *prefix = "Joint_"; 
-	char *prefix = "./SingleJointRecord/Joint_";
-	char* postfix = ".txt";
-	char theName[30];
-	itoa(theType, theName,10);  // MAY CRASH
-	char *aName;
-	char *finalname;
-	//string theName = string(intStr);
-	strcpy_s(aName, strlen(prefix) + 1, prefix);
-	strcat_s(aName, strlen(prefix) + strlen(theName) + 1, theName);
-	strcat_s(finalname, strlen(aName) + strlen(postfix) + 1, postfix);
-
-	delete aName;
-
-	//Open reading file
-	theFile.open(name, ios::in);
+		//fstream file;
 
 
-	//Open new Writting file
-	//theFile.open(finalname, ios::out);
-	file.open(finalname, ios::out);
-	//ifstream file("OutputLog.txt");
+		//vector <vector <string> > data;
+		//instream infile("OutputLog.txt");
 
+		//ofstream infile("./SingleJointRecord/InputLog.txt");
 
-	// until we reach end of reading file
-	
-	string  line;
+		std::string   line;
+		bool firstLine = true;
+		bool firstFrameLine = true;
+		int type, frames;
+		int numberOfJoints = 15;
+		int jointCount = 0;
+		const  int floatelements = 9;
+		float frameInfo[floatelements]; // posx, posy, posz, orix, oriy, oriz, oriw, confpos, confori;
 
-	while (getline(theFile, line)) {
-		stringstream linestream(line);
-		string data;
-
-		getline(linestream, data, ';');
-		linestream >> type >> posx >> posy >> posz >> orix >> oriy >> oriz >> confpos >> confori;
-
-
-		if (theType == type) {
-			theFile << posx << ";" << posy << ";" << posz <<endl;
-			//NO endl
-			/*
-			theFile << theSkeleton.getJoint(JointList[i]).getOrientation().x << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().y << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().z << ";" << theSkeleton.getJoint(JointList[i]).getOrientation().w << ";";
-			//NO endl
-			theFile << theSkeleton.getJoint(JointList[i]).getPositionConfidence() << ";" << theSkeleton.getJoint(JointList[i]).getOrientationConfidence() << endl;
-			*/
-		}
 		
-	}
+		char *prefix = "./SingleJointRecord/Joint_";
+		char* postfix = ".txt";
+		char theName[200];
+		char finalname[100];
+		int totalFrames;
+		ostringstream convert;
+		convert << theType;
+		//char bname[200];
+		string bName = convert.str();
+		strcpy_s(theName, bName.c_str());
+		strcpy_s(finalname, prefix);
+		strcat_s(finalname, theName);
+		strcat_s(finalname, postfix);
 
-	// close both
-	theFile.close(); // <-- carefull that we are not writting at the time
-	file.close();
-	}
+		
+
+		//Open files
+		//fstream infile(finalname, ios::out);
+		ofstream infile(finalname);
+		ifstream outfile("OutputLog.txt");
+		//theFile.open(name, ios::in);
+		//std::ofstream infile("./SingleJointRecord/InputLog.txt");
+
+
+
+
+		// until we reach end of reading file
+		
+
+
+
+		/*works*/
+		// If you have truly tab delimited data use getline() with third parameter.
+		// If your data is just white space separated data
+		// then the operator >> will do (it reads a space separated word into a string).
+		// read up-to the first tab (discard tab).
+		//file >> frames;
+		//cout << frames << endl;
+		while (std::getline(outfile, line))
+		{
+			//cout << line << endl;
+			std::stringstream   linestream(line);
+			std::string         data;
+
+
+			// First line in the doc - HAPPENS ONLY ONCE
+			if (firstLine) {
+				//std::getline(linestream, data);
+				linestream >> frames;
+				infile << frames << endl;
+				std::cout << frames << "HAPPENS ONLY ONCE" << endl;
+				firstLine = false;
+			}
+			else {
+
+				// (int bodyid/int frame/int bodystate)
+				if (firstFrameLine) {
+					firstFrameLine = false;
+					// Do something?
+				}
+				//(int jointType/positions(3)/orientations(4)/confidences(2))
+				else {
+					int elementCount = 0;
+					while (getline(linestream, data, ';')) {
+						//linestream >> type;
+
+
+						if (elementCount == 0)
+							type = stoi(data);
+						else {
+							frameInfo[elementCount - 1] = stof(data);
+
+							//linestream >> type >> posx >> posy >> posz >> orix >> oriy >> oriz >> oriw >> confpos >> confori;
+							//infile << type << ";" << posx << ";" << posy << ";" << posz << endl;
+							//cout << type << ";" << posx << ";" << posy << ";" << posz << endl;
+							//cout << type << endl;
+						}
+						elementCount++;
+
+					}
+					//cout << type << endl;
+					infile << type << ";" << frameInfo[0] << ";" << frameInfo[1] << ";" << frameInfo[2] << endl;
+
+					//std::getline(linestream, data, ';');
+					//linestream >> posx >> posy >> val3 >> val4;
+					//std::cout << posx << "--" << posy << "--" << val3 << "--" << val4 << endl;
+					jointCount++;
+					//cout << "jointcount= " << jointCount << endl;
+					if (numberOfJoints - 1<jointCount) {
+						jointCount = 0;
+						firstFrameLine = true;
+						//cout << "skipped --1 :" << endl;
+					}
+				}
+			}
+
+
+
+
+			// Read the integers using the operator >>
+
+			//cout << sizeof(linestream) <<endl;
+		}
+		if (!outfile.eof())
+		{
+			cerr << "Error!\n";
+		}
+
+		outfile.close();
+		infile.close();
+		}
 
 }
 

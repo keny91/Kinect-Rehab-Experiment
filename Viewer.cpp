@@ -520,10 +520,12 @@ void SampleViewer::Display()
 				cout << "THE DISTANCE BETWEEN HANDS IS:"<<GetDistanceBetweenJoints(user.getSkeleton().getJoint(nite::JOINT_LEFT_HAND), user.getSkeleton().getJoint(nite::JOINT_RIGHT_HAND)) << endl;
 				//RECORDING HERE
 				if (theRecording->isRecording) {
-					theRecording->InsertRegisterSkeleton(users[i].getSkeleton(), users[i].getId(), 1);
+					theRecording->InsertRegisterSkeleton(users[i].getSkeleton(), users[i].getId(), userTrackerFrame.getFrameIndex());
 					if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))>1000) {
 
 						theRecording->StopRecording();
+						theRecording->SeparateSingleJoint(JOINT_LEFT_HAND);
+						//On stop recording Create new Logs -> Evaluation process
 					}
 				}
 				else if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))<150) {
