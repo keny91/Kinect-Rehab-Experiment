@@ -62,6 +62,12 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 {
 	ms_self = this;
 	theRecording = new RecordLog("OutputLog");
+
+	string aTestName("./SingleJointRecord/Joint_L_HAND_P.bin");
+	//float**testarray;
+	TestFloat = theRecording->ReadFrameRegisterToArray(aTestName);
+	//cout << testarray[0][0];
+
 	strncpy(m_strSampleName, strSampleName, ONI_MAX_STR);
 	m_pUserTracker = new nite::UserTracker;
 }
@@ -517,20 +523,21 @@ void SampleViewer::Display()
 				//RECORDING HERE
 				//theRecording->InsertRegisterSkeleton(user.getSkeleton(), user.getId(), 1);
 
-				cout << "THE DISTANCE BETWEEN HANDS IS:"<<GetDistanceBetweenJoints(user.getSkeleton().getJoint(nite::JOINT_LEFT_HAND), user.getSkeleton().getJoint(nite::JOINT_RIGHT_HAND)) << endl;
+				//cout << "THE DISTANCE BETWEEN HANDS IS:"<<GetDistanceBetweenJoints(user.getSkeleton().getJoint(nite::JOINT_LEFT_HAND), user.getSkeleton().getJoint(nite::JOINT_RIGHT_HAND)) << endl;
 				//RECORDING HERE
 				if (theRecording->isRecording) {
 					theRecording->InsertRegisterSkeleton(users[i].getSkeleton(), users[i].getId(), userTrackerFrame.getFrameIndex());
 					if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))>1000) {
 
 						theRecording->StopRecording();
-						theRecording->SeparateSingleJoint(JOINT_LEFT_HAND);
+						theRecording->SeparateSingleJoint(JOINT_LEFT_HAND, true, false,false);
 						//On stop recording Create new Logs -> Evaluation process
 					}
 				}
 				else if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))<150) {
 
-						theRecording->StartRecording();					
+						theRecording->StartRecording();	
+
 				}
 			}
 		}

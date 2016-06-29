@@ -22,6 +22,7 @@ public:
 	SampleViewer(const char* strSampleName);
 	virtual ~SampleViewer();
 	RecordLog* theRecording;
+	float ** TestFloat;
 	virtual openni::Status Init(int argc, char **argv);
 	virtual openni::Status Run();	//Does not return
 

@@ -36,10 +36,10 @@ public:
 	//void InsertRegisterNTSkeleton(NTSkeleton theSkeleton);
 
 	void StartReading();
-	void ReadFrameRegister(); // LINE BY LINE?
+	float**  ReadFrameRegisterToArray(string nameFile); // LINE BY LINE?
 	void EndReading();
 	void CreateEvaluationReport();
-	void RecordLog::SeparateSingleJoint(JointType theType);
+	void SeparateSingleJoint(JointType theType, bool recordPosition, bool recordOrientation, bool recordConfidence);
 	Skeleton aSkeleton;
 
 private:

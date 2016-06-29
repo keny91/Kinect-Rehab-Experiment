@@ -191,7 +191,7 @@ void RecordLog::StartReading() {
 	theFile << "FileBeggining" << endl;
 }
 
-/***SeparateSingleJoint:************************************
+/***SeparateSingleJoint:*******************************************
 Convert from "SkeletonState" to "NiteSkeletonState"
 required to avoid linker errors.
 Order is:
@@ -203,20 +203,64 @@ Joint2: ...
 Frame/body/SkeletonState
 ...
 *******************************************************************/
-void RecordLog::SeparateSingleJoint(JointType theType) {
+void RecordLog::SeparateSingleJoint(JointType theType, bool recordPosition, bool recordOrientation, bool recordConfidence) {
 
 	if(!isRecording){
 
+		char *jointName;
+		switch (theType) {
+		case 0:
+			jointName = "HEAD";
+			break; 
+		case 1:
+			jointName = "NECK";
+			break;
+		case 2:
+			jointName = "L_SHOULDER";
+			break;
+		case 3:
+			jointName = "R_SHOULDER";
+			break;
+		case 4:
+			jointName = "L_ELBOW";
+			break;
+		case 5:
+			jointName = "R_ELBOW";
+			break;
+		case 6:
+			jointName = "L_HAND";
+			break;
+		case 7:
+			jointName = "R_HAND";
+			break;
+		case 8:
+			jointName = "TORSO";
+			break;
+		case 9:
+			jointName = "L_HIP";
+			break;
+		case 10:
+			jointName = "R_HIP";
+			break;
+		case 11:
+			jointName = "L_KNEE";
+			break;
+		case 12:
+			jointName = "R_KNEE";
+			break;
+		case 13:
+			jointName = "L_FOOT";
+			break;
+		case 14:
+			jointName = "R_FOOT";
+			break;
+		default: //Optional
+			jointName = "UNKNOWN";
+		}
 
-		//fstream file;
 
-
-		//vector <vector <string> > data;
-		//instream infile("OutputLog.txt");
-
-		//ofstream infile("./SingleJointRecord/InputLog.txt");
-
-		std::string   line;
+		int numColumns = 0;
+		string   line;
 		bool firstLine = true;
 		bool firstFrameLine = true;
 		int type, frames;
@@ -227,43 +271,50 @@ void RecordLog::SeparateSingleJoint(JointType theType) {
 
 		
 		char *prefix = "./SingleJointRecord/Joint_";
-		char* postfix = ".txt";
+		//char* postfix = ".txt";
+		char* postfix = ".bin";
 		char theName[200];
 		char finalname[100];
+		char*posPostfix = "_P";
+		char*oriPostfix = "_O";
+		char*confPostfix = "_C";
 		int totalFrames;
 		ostringstream convert;
 		convert << theType;
 		//char bname[200];
-		string bName = convert.str();
-		strcpy_s(theName, bName.c_str());
+		//string bName = convert.str();
+		//strcpy_s(theName, bName.c_str());
 		strcpy_s(finalname, prefix);
-		strcat_s(finalname, theName);
+		strcat_s(finalname, jointName);
+		if (recordPosition) {
+			numColumns = numColumns + 3;
+			strcat_s(finalname, posPostfix);
+		}
+			
+		if (recordOrientation) {
+			strcat_s(finalname, oriPostfix);
+			numColumns = numColumns + 4;
+		}
+
+		if (recordConfidence){
+			numColumns = numColumns + 2;
+			strcat_s(finalname, confPostfix);
+		}
+			
 		strcat_s(finalname, postfix);
 
 		
 
 		//Open files
-		//fstream infile(finalname, ios::out);
+
 		ofstream infile(finalname);
 		ifstream outfile("OutputLog.txt");
 		//theFile.open(name, ios::in);
 		//std::ofstream infile("./SingleJointRecord/InputLog.txt");
 
 
-
-
-		// until we reach end of reading file
-		
-
-
-
 		/*works*/
-		// If you have truly tab delimited data use getline() with third parameter.
-		// If your data is just white space separated data
-		// then the operator >> will do (it reads a space separated word into a string).
-		// read up-to the first tab (discard tab).
-		//file >> frames;
-		//cout << frames << endl;
+
 		while (std::getline(outfile, line))
 		{
 			//cout << line << endl;
@@ -275,8 +326,8 @@ void RecordLog::SeparateSingleJoint(JointType theType) {
 			if (firstLine) {
 				//std::getline(linestream, data);
 				linestream >> frames;
-				infile << frames << endl;
-				std::cout << frames << "HAPPENS ONLY ONCE" << endl;
+				infile << frames << ";" << numColumns << endl;
+				//cout << frames << "HAPPENS ONLY ONCE" << endl;
 				firstLine = false;
 			}
 			else {
@@ -297,18 +348,29 @@ void RecordLog::SeparateSingleJoint(JointType theType) {
 							type = stoi(data);
 						else {
 							frameInfo[elementCount - 1] = stof(data);
-
-							//linestream >> type >> posx >> posy >> posz >> orix >> oriy >> oriz >> oriw >> confpos >> confori;
-							//infile << type << ";" << posx << ";" << posy << ";" << posz << endl;
-							//cout << type << ";" << posx << ";" << posy << ";" << posz << endl;
-							//cout << type << endl;
 						}
 						elementCount++;
 
 					}
 					//cout << type << endl;
-					infile << type << ";" << frameInfo[0] << ";" << frameInfo[1] << ";" << frameInfo[2] << endl;
+					if(type == theType){
+						if(recordPosition)
+						infile << frameInfo[0] << ";" << frameInfo[1] << ";" << frameInfo[2];
+						if (recordOrientation) {
+							if (recordPosition)
+								infile << ";";
+							infile << frameInfo[3] << ";" << frameInfo[4] << ";" << frameInfo[5] << ";" << frameInfo[6];
 
+							
+						}
+						if (recordConfidence) {
+							if (recordPosition || recordOrientation)
+								infile << ";";
+							infile << frameInfo[7] << ";" << frameInfo[8];
+						}
+							
+						infile << endl;
+					}
 					//std::getline(linestream, data, ';');
 					//linestream >> posx >> posy >> val3 >> val4;
 					//std::cout << posx << "--" << posy << "--" << val3 << "--" << val4 << endl;
@@ -321,17 +383,12 @@ void RecordLog::SeparateSingleJoint(JointType theType) {
 					}
 				}
 			}
-
-
-
-
-			// Read the integers using the operator >>
-
-			//cout << sizeof(linestream) <<endl;
 		}
+
+		// Error Case
 		if (!outfile.eof())
 		{
-			cerr << "Error!\n";
+			cerr << "Error when creating the Log!\n";
 		}
 
 		outfile.close();
@@ -346,29 +403,73 @@ void RecordLog::SeparateSingleJoint(JointType theType) {
 
 /***ReadFrameRegister:************************************
 Read a whole set of joints allocated in the same frame
-*******************************************************************/
-void RecordLog::ReadFrameRegister() {
-	char splitter = ';';
-	string line;
-	//while(std::getline(file, line)){
-	getline(theFile, line);
+******************************************************************/
+float** RecordLog::ReadFrameRegisterToArray(string nameFile) {
 
-	// work
-	std::stringstream linestream(line);
-	std::vector<std::string> tokens;
-	for (std::string each; std::getline(linestream, each, splitter); tokens.push_back(each));
+	string  line;
+	bool firstLine = true;
+	int row, col = 0;
+	int rowCount = 0, colCount = 0;
 
+	float **theArray;
+	// Needs to be initialized to avoid error?
+	theArray = new float*[rowCount];
+	for (int i = 0; i < rowCount; ++i)
+		theArray[i] = new float[colCount];
 
-	// Each token has a value
-	//does this read the final segment? -> before endl?
-
-	//DEBUGG TO FIND OUT
+	cout << "Step 1 passed" << endl;
 
 
+	ifstream outfile(nameFile);
+	while (std::getline(outfile, line))
+	{
+		//cout << line << endl;
+		std::stringstream   linestream(line);
+		std::string         data;
 
-	//theFile.open(name, ios::in);
-	//getline
-	//theFile << "FileBeggining" << endl;
+
+		// First line in the doc - HAPPENS ONLY ONCE
+		if (firstLine) {
+			//std::getline(linestream, data);
+			bool onetime = true;
+			while (getline(linestream, data, ';')) {
+				//linestream >> frames;
+				if(onetime){
+					rowCount = stoi(data);
+					onetime = false;
+				}
+				else{
+					colCount = stoi(data);
+					theArray = new float*[rowCount];
+					for (int i = 0; i < rowCount; ++i)
+						theArray[i] = new float[colCount];
+				}
+			}
+			firstLine = false;
+			cout << "firstLine passed" << endl;
+		}
+		else {
+			row = 0;
+			while (getline(linestream, data, ';')) {
+				//linestream >> type;
+				
+				theArray[row][col] = stof(data);
+				row++;
+
+			}
+			col++;
+		}
+	}
+
+
+	if (!outfile.eof())
+	{
+		cerr << "Error in reading file!\n";
+	}
+	outfile.close();
+	cout << "finished   " << theArray[1][1]  <<endl;
+	return theArray;
+
 }
 
 
