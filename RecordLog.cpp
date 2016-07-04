@@ -49,10 +49,18 @@ RecordLog::RecordLog()
 	JointList[12] = JOINT_RIGHT_KNEE;
 	JointList[13] = JOINT_RIGHT_SHOULDER;
 	JointList[14] = JOINT_TORSO;
+
+	JointSelection = new bool[NITE_JOINT_COUNT]();
+	for (int i = 0; i < NITE_JOINT_COUNT; i++)
+		JointSelection[i] = false;
+
+	//recordPostFix = false;
+	//Init Folders
+	InitFolders();
 }
 
 
-RecordLog::RecordLog(char* theName)
+RecordLog::RecordLog(char* theName, bool recordPost)
 {
 
 	//cout << "" << endl;
@@ -84,6 +92,15 @@ RecordLog::RecordLog(char* theName)
 	JointList[12] = JOINT_RIGHT_KNEE;
 	JointList[13] = JOINT_RIGHT_SHOULDER;
 	JointList[14] = JOINT_TORSO;
+	recordPostFix = recordPost;
+
+	// There is a correspondance between JointSelection and JointList
+	JointSelection = new bool[NITE_JOINT_COUNT]();
+	for (int i = 0; i < NITE_JOINT_COUNT; i++)
+		JointSelection[i] = false;
+
+	//Init Folders
+	InitFolders();
 
 }
 
@@ -91,6 +108,24 @@ RecordLog::~RecordLog()
 {
 
 }
+
+
+/***InitFolders:**************************************
+Create Required folders for the project structures
+*****************************************************/
+void RecordLog::InitFolders() {
+	const char* Folder = "./GT";
+	if (_mkdir(Folder) ||
+		ERROR_ALREADY_EXISTS == GetLastError())
+		cout << "Created Directory:  ./" << Folder << endl;
+
+	Folder = "./Samples";
+	if (_mkdir(Folder) ||
+		ERROR_ALREADY_EXISTS == GetLastError())
+		cout << "Created Directory: ./" << Folder << endl;
+}
+
+
 
 
 void RecordLog::StartRecording() {
@@ -191,6 +226,115 @@ void RecordLog::StartReading() {
 	theFile << "FileBeggining" << endl;
 }
 
+
+/***Enable/DisableRecordingOfJoint:************************************
+Decide and toogle which joints will be used to represent a gesture
+*******************************************************************/
+void RecordLog::EnableRecordingOfJoint(JointType theType) {
+
+	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
+		if(JointList[i] == theType)
+			JointSelection[i] = true;
+	}
+		
+}
+
+void RecordLog::DisableRecordingOfJoint(JointType theType) {
+
+	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
+		if (JointList[i] == theType)
+			JointSelection[i] = false;
+	}
+
+}
+
+/***CreateGestureLog:***************************************
+Read a whole set of joints allocated in the same frame
+******************************************************************/
+void RecordLog::CreateGestureLog(char* FileName, bool GT) {
+	char * FolderName;
+	char directory[200];
+	if (GT)
+		FolderName = "./GT/";
+	else
+		FolderName = "./Samples/";
+
+	//mkdir("c:/myfolder");
+	strcpy_s(directory, FolderName);  // ./Samples/
+	strcat_s(directory, FileName);	// ./Samples/exercise1
+			// ./Samples/exercise1/
+
+	//Create folder
+	if (_mkdir(directory) ||
+		ERROR_ALREADY_EXISTS == GetLastError())
+		cout << "Created Directory: " << directory << endl;
+
+	strcat_s(directory, "/"); // ./Samples/exercise1/
+	cout << "the path is: " << directory << endl;
+
+	char copyOutputLogNewPath[100];
+	char* copyOutputLog = "OutputLog.txt";
+	strcpy_s(copyOutputLogNewPath, directory);
+	strcat_s(copyOutputLogNewPath, copyOutputLog);
+	cout << "the path for outputlogis: " << copyOutputLogNewPath << endl;
+
+	//Copy Output.txt to folder
+
+	/* CHANGE CODE IN THE FUTURE
+	ifstream src("./OutputLog.txt", std::ios::binary);
+	ofstream dest(copyOutputLogNewPath, std::ios::binary);
+	*/ 
+
+
+	ifstream src("./OutputLog.txt");
+	ofstream dest(copyOutputLogNewPath);
+
+	dest << src.rdbuf();
+	src.close();
+	dest.close();
+
+	strcpy_s(copyOutputLogNewPath, directory);
+	char* datafilename = "info.txt";
+	strcat_s(copyOutputLogNewPath, datafilename);
+	cout << "the path to data: " << copyOutputLogNewPath << endl;
+	//Create a file with the joint info
+	ofstream datafile(copyOutputLogNewPath);
+
+	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
+		if (JointSelection[i]) {
+			datafile << i << endl; // 1 PER LINE
+			SeparateSingleJoint(JointList[i], directory,false, true, false, false);
+			cout << "Created Joint Type log: " << JointList[i] << endl;
+		}
+	}
+
+	datafile.close();
+/*
+	ifstream outfile(FileName);
+	string  line;
+	std::string  data;
+	getline(outfile, line);
+	std::stringstream   linestream(line);
+	bool onetime = true;
+	//cout << line << endl;
+
+	while (getline(linestream, data, ';')) {
+		//linestream >> frames;
+		if (onetime) {
+			*rows = stoi(data);
+			onetime = false;
+		}
+		else {
+			*cols = stoi(data);
+
+		}
+	}
+	outfile.close();
+
+	*/
+}
+
+
 /***SeparateSingleJoint:*******************************************
 Convert from "SkeletonState" to "NiteSkeletonState"
 required to avoid linker errors.
@@ -203,7 +347,7 @@ Joint2: ...
 Frame/body/SkeletonState
 ...
 *******************************************************************/
-void RecordLog::SeparateSingleJoint(JointType theType, bool recordPosition, bool recordOrientation, bool recordConfidence) {
+void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool recordPostFix = false,bool recordPosition =true, bool recordOrientation=false, bool recordConfidence=false) {
 
 	if(!isRecording){
 
@@ -270,40 +414,55 @@ void RecordLog::SeparateSingleJoint(JointType theType, bool recordPosition, bool
 		float frameInfo[floatelements]; // posx, posy, posz, orix, oriy, oriz, oriw, confpos, confori;
 
 		
-		char *prefix = "./SingleJointRecord/Joint_";
+		char *prefix = "Joint_";
 		//char* postfix = ".txt";
 		char* postfix = ".bin";
-		char theName[200];
-		char finalname[100];
+		//char theName[200];
+		char finalname[200];
 		char*posPostfix = "_P";
 		char*oriPostfix = "_O";
 		char*confPostfix = "_C";
 		int totalFrames;
-		ostringstream convert;
-		convert << theType;
+		//ostringstream convert;
+		//convert << theType;
 		//char bname[200];
 		//string bName = convert.str();
 		//strcpy_s(theName, bName.c_str());
-		strcpy_s(finalname, prefix);
-		strcat_s(finalname, jointName);
-		if (recordPosition) {
-			numColumns = numColumns + 3;
-			strcat_s(finalname, posPostfix);
-		}
-			
-		if (recordOrientation) {
-			strcat_s(finalname, oriPostfix);
-			numColumns = numColumns + 4;
-		}
 
-		if (recordConfidence){
-			numColumns = numColumns + 2;
-			strcat_s(finalname, confPostfix);
-		}
+		strcpy_s(finalname, directory);
+		strcat_s(finalname, prefix);
+		strcat_s(finalname, jointName);
+
+
+		//Only if we are recording postfix
+		if(recordPostFix){
+			if (recordPosition) {
+				strcat_s(finalname, posPostfix);
+			}
 			
+			if (recordOrientation) {
+				strcat_s(finalname, oriPostfix);
+			}
+
+			if (recordConfidence){
+				strcat_s(finalname, confPostfix);
+			}
+		}
 		strcat_s(finalname, postfix);
 
 		
+		if (recordPosition) {
+			numColumns = numColumns + 3;
+		}
+
+		if (recordOrientation) {
+			numColumns = numColumns + 4;
+		}
+
+		if (recordConfidence) {
+			numColumns = numColumns + 2;
+		}
+
 
 		//Open files
 
@@ -398,13 +557,55 @@ void RecordLog::SeparateSingleJoint(JointType theType, bool recordPosition, bool
 }
 
 
+/***GetRelativePosition:************************************
+Get the relative position vector from a joint to another
+******************************************************************/
+
+Point3f RecordLog::GetRelativePosition(SkeletonJoint Origin, SkeletonJoint Target) {
+	Point3f coordinates;
+	float x, y, z;
+	x = Target.getPosition().x - Origin.getPosition().x;
+	y = Target.getPosition().y - Origin.getPosition().y;
+	z = Target.getPosition().z - Origin.getPosition().z;
+	coordinates.set(x, y, z);
+	return coordinates;
+}
 
 
 
-/***ReadFrameRegister:************************************
+
+/***GetLogDimensions:***************************************
 Read a whole set of joints allocated in the same frame
 ******************************************************************/
-float** RecordLog::ReadFrameRegisterToArray(string nameFile) {
+void RecordLog::GetLogDimensions(char* nameFile, int * rows, int* cols) {
+
+	ifstream outfile(nameFile);
+	string  line;
+	std::string  data;
+	getline(outfile, line);
+	std::stringstream   linestream(line);
+	bool onetime = true;
+		//cout << line << endl;
+
+	while (getline(linestream, data, ';')) {
+		//linestream >> frames;
+		if (onetime) {
+			*rows = stoi(data);
+			onetime = false;
+		}
+		else {
+			*cols = stoi(data);
+
+		}
+	}
+	outfile.close();
+}
+
+
+/***ReadFrameRegisterToArray:************************************
+Read a whole set of joints allocated in the same frame
+******************************************************************/
+void RecordLog::ReadFrameRegisterToArray(string nameFile, float ** theMatrix) {
 
 	string  line;
 	bool firstLine = true;
@@ -436,13 +637,24 @@ float** RecordLog::ReadFrameRegisterToArray(string nameFile) {
 				//linestream >> frames;
 				if(onetime){
 					rowCount = stoi(data);
+					if (sizeof(theMatrix) == rowCount) {
+						cout << "ERROR, Dimensions do not fit";
+					}
 					onetime = false;
 				}
 				else{
 					colCount = stoi(data);
+					if (sizeof(theMatrix[0]) == colCount) {
+						//my_array.size(); /* size of y */
+						//my_array[0].size(); /* size of x */
+						cout << "ERROR, Dimensions do not fit";
+					}
+					/*
+					colCount = stoi(data);
 					theArray = new float*[rowCount];
 					for (int i = 0; i < rowCount; ++i)
-						theArray[i] = new float[colCount];
+					theArray[i] = new float[colCount];
+					*/
 				}
 			}
 			firstLine = false;
@@ -453,11 +665,12 @@ float** RecordLog::ReadFrameRegisterToArray(string nameFile) {
 			while (getline(linestream, data, ';')) {
 				//linestream >> type;
 				
-				theArray[row][col] = stof(data);
+				theMatrix[row][col] = stof(data);
 				row++;
 
 			}
 			col++;
+			//cout << col << endl;
 		}
 	}
 
@@ -467,8 +680,8 @@ float** RecordLog::ReadFrameRegisterToArray(string nameFile) {
 		cerr << "Error in reading file!\n";
 	}
 	outfile.close();
-	cout << "finished   " << theArray[1][1]  <<endl;
-	return theArray;
+	cout << "finished   " << theMatrix[1][1]  <<endl;
+	//return theArray;
 
 }
 

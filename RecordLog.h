@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <windows.h>
+#include <direct.h>
 
 using namespace std;
 
@@ -26,25 +28,34 @@ class RecordLog
 public:
 
 	RecordLog();
-	RecordLog(char* name);
+	RecordLog(char* name, bool recordPost = false);
 	~RecordLog();
 	bool isRecording;
 	int elapsedFrames;
 	void StartRecording();
 	void StopRecording();
 	void InsertRegisterSkeleton(Skeleton theSkeleton, int frameint, int BodyID);
+	Point3f GetRelativePosition(SkeletonJoint Origin, SkeletonJoint Target);
 	//void InsertRegisterNTSkeleton(NTSkeleton theSkeleton);
 
 	void StartReading();
-	float**  ReadFrameRegisterToArray(string nameFile); // LINE BY LINE?
+	void ReadFrameRegisterToArray(string nameFile, float ** theMatrix); // LINE BY LINE?
 	void EndReading();
 	void CreateEvaluationReport();
-	void SeparateSingleJoint(JointType theType, bool recordPosition, bool recordOrientation, bool recordConfidence);
+	void SeparateSingleJoint(JointType theType, char * directory,bool recordPostFix, bool recordPosition, bool recordOrientation, bool recordConfidence);
+	void GetLogDimensions(char* nameFile, int * rows, int* cols);
+	void CreateGestureLog(char* FileName, bool GT);
+	void EnableRecordingOfJoint(JointType theType);
+	void DisableRecordingOfJoint(JointType theType);
+	void ChangeName(char* name);
 	Skeleton aSkeleton;
 
 private:
+	void RecordLog::InitFolders();
 	fstream theFile;
 	char*name;
+	bool * JointSelection;
+	bool recordPostFix;
 	JointType *JointList;
 };
 

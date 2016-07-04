@@ -63,9 +63,24 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	ms_self = this;
 	theRecording = new RecordLog("OutputLog");
 
-	string aTestName("./SingleJointRecord/Joint_L_HAND_P.bin");
+	char* aTestName ="./SingleJointRecord/Joint_L_HAND_P.bin";
 	//float**testarray;
-	TestFloat = theRecording->ReadFrameRegisterToArray(aTestName);
+
+	int * rowCount, *colCount;
+	rowCount = new int();
+	colCount = new int();
+	theRecording->GetLogDimensions(aTestName, rowCount, colCount);
+
+	float **theArray;
+	// Needs to be initialized to avoid error?
+	theArray = new float*[*rowCount];
+	for (int i = 0; i < *rowCount; ++i)
+		theArray[i] = new float[*colCount];
+
+	theRecording->ReadFrameRegisterToArray(aTestName, theArray);
+	theRecording->EnableRecordingOfJoint(JOINT_HEAD);
+	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_FOOT);
+	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_HAND);
 	//cout << testarray[0][0];
 
 	strncpy(m_strSampleName, strSampleName, ONI_MAX_STR);
@@ -530,14 +545,15 @@ void SampleViewer::Display()
 					if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))>1000) {
 
 						theRecording->StopRecording();
-						theRecording->SeparateSingleJoint(JOINT_LEFT_HAND, true, false,false);
+						//theRecording->SeparateSingleJoint(JOINT_LEFT_HAND,directory ,false,true, false,false);
+						theRecording->CreateGestureLog("ExampleGT", true);
 						//On stop recording Create new Logs -> Evaluation process
 					}
 				}
 				else if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))<150) {
 
 						theRecording->StartRecording();	
-
+						cout << "Stop Recording" << endl;
 				}
 			}
 		}
