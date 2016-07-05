@@ -6,6 +6,8 @@
 
 #define NITE_JOINT_COUNT 15
 
+#include <stdio.h>
+//#include "SequentialUserCapture.h"
 #include <iostream>
 #include <fstream>
 #include "NiTE.h"
@@ -13,21 +15,29 @@
 #include <vector>
 #include <sstream>
 
+using namespace std;
+
 class Compare
 {
 public:
-	Compare(char* nameSample, char* nameGT);
+	Compare();
+	Compare(char* nameSampleFile, char* nameGTFile);
 	~Compare();
-	void initInfo();
-	void GetJointSelection();
-	bool CheckJointCompatibility();
+	void makeComparison(char* nameSampleFile, char* nameGTFile);
+	bool GetJointSelection();
+	void exitComparation();
+	bool checkFileExistence(const char* name);
 
 private:
 	long Cost;
 	bool * JointSelection;
 	char*SampleName;  // name of the folder inside samples
 	char*GTName;	// name of the folder storing the GT joint logs
-	char*path;
+	char*pathSampleFile;
+	char*pathSGTFile;
+	bool inProcess;
+	ifstream GTFile;
+	ifstream SampleFile;
 	// other possible values here
 };
 

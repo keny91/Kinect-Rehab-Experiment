@@ -11,6 +11,7 @@
 #include "NiTE.h"
 #include <iostream>
 #include "RecordLog.h"
+#include "Compare.h"
 
 using namespace std;
 
@@ -22,6 +23,7 @@ public:
 	SampleViewer(const char* strSampleName);
 	virtual ~SampleViewer();
 	RecordLog* theRecording;
+	Compare* theComparator;
 	float ** TestFloat;
 	virtual openni::Status Init(int argc, char **argv);
 	virtual openni::Status Run();	//Does not return

@@ -184,8 +184,6 @@ void NTSkeleton::SetSkelletonNull() {
 
 
 
-
-
 /*********************
 	SKELETON_JOINT:	  
 **********************/

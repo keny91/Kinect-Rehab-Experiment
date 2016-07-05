@@ -117,12 +117,12 @@ void RecordLog::InitFolders() {
 	const char* Folder = "./GT";
 	if (_mkdir(Folder) ||
 		ERROR_ALREADY_EXISTS == GetLastError())
-		cout << "Created Directory:  ./" << Folder << endl;
+		cout << "Created Directory:  " << Folder << endl;
 
 	Folder = "./Samples";
 	if (_mkdir(Folder) ||
 		ERROR_ALREADY_EXISTS == GetLastError())
-		cout << "Created Directory: ./" << Folder << endl;
+		cout << "Created Directory: " << Folder << endl;
 }
 
 
@@ -130,7 +130,7 @@ void RecordLog::InitFolders() {
 
 void RecordLog::StartRecording() {
 	theFile.open(name, ios::out);
-	theFile << "              " << endl;
+	theFile << "                 " << endl;
 	isRecording = true;
 	elapsedFrames = 0;
 
@@ -286,7 +286,7 @@ void RecordLog::CreateGestureLog(char* FileName, bool GT) {
 	*/ 
 
 
-	ifstream src("./OutputLog.txt");
+	ifstream src("./OutputLog.txt"); //PROBLEM - Sometimes crashes?!
 	ofstream dest(copyOutputLogNewPath);
 
 	dest << src.rdbuf();
@@ -294,7 +294,7 @@ void RecordLog::CreateGestureLog(char* FileName, bool GT) {
 	dest.close();
 
 	strcpy_s(copyOutputLogNewPath, directory);
-	char* datafilename = "info.txt";
+	char* datafilename = "info.bin";
 	strcat_s(copyOutputLogNewPath, datafilename);
 	cout << "the path to data: " << copyOutputLogNewPath << endl;
 	//Create a file with the joint info
@@ -302,10 +302,12 @@ void RecordLog::CreateGestureLog(char* FileName, bool GT) {
 
 	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
 		if (JointSelection[i]) {
-			datafile << i << endl; // 1 PER LINE
+			datafile << i << ";" << 1 << endl; // 1 PER LINE
 			SeparateSingleJoint(JointList[i], directory,false, true, false, false);
 			cout << "Created Joint Type log: " << JointList[i] << endl;
 		}
+		else
+			datafile << i << ";" << 0 << endl; 
 	}
 
 	datafile.close();
@@ -332,6 +334,17 @@ void RecordLog::CreateGestureLog(char* FileName, bool GT) {
 	outfile.close();
 
 	*/
+}
+
+
+/***checkFileExistence:***************************************
+Support Function that will tell us if a file with a certain name already exists.
+Might cause unnecessary slow
+
+******************************************************************/
+bool checkFileExistence(const char* name) {
+	struct stat buffer;
+	return (stat(name, &buffer) == 0);
 }
 
 

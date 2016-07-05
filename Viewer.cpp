@@ -63,8 +63,10 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	ms_self = this;
 	theRecording = new RecordLog("OutputLog");
 
+
 	char* aTestName ="./SingleJointRecord/Joint_L_HAND_P.bin";
 	//float**testarray;
+	theComparator = new Compare("ExampleSamples", "ExampleGT");
 
 	int * rowCount, *colCount;
 	rowCount = new int();
@@ -81,6 +83,7 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	theRecording->EnableRecordingOfJoint(JOINT_HEAD);
 	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_FOOT);
 	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_HAND);
+	//theRecording->CreateGestureLog("ExampleSamples", false);
 	//cout << testarray[0][0];
 
 	strncpy(m_strSampleName, strSampleName, ONI_MAX_STR);
@@ -546,7 +549,7 @@ void SampleViewer::Display()
 
 						theRecording->StopRecording();
 						//theRecording->SeparateSingleJoint(JOINT_LEFT_HAND,directory ,false,true, false,false);
-						theRecording->CreateGestureLog("ExampleGT", true);
+						theRecording->CreateGestureLog("ExampleSamples", false);
 						//On stop recording Create new Logs -> Evaluation process
 					}
 				}

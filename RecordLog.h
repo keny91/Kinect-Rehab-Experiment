@@ -16,12 +16,14 @@
 #include <windows.h>
 #include <direct.h>
 
-using namespace std;
 
 #define NITE_JOINT_COUNT 15
 #define NITE_POSE_COUNT 2
 using namespace std;
 using namespace nite;
+
+
+bool checkFileExistence(const char* name);
 
 class RecordLog
 {
