@@ -27,7 +27,9 @@ public:
 	bool GetJointSelection();
 	void exitComparation();
 	bool checkFileExistence(const char* name);
-
+	void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix);
+	void JointByJointCostCalculation();
+	void GetLogDimensions(char* nameFile, int * rows, int* cols);
 private:
 	long Cost;
 	bool * JointSelection;

@@ -94,7 +94,7 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 	if (checkGT && checkSample) {
 
 		if (GetJointSelection()) {
-			cout << "Joint selection completed";
+			cout << "Joint selection completed" <<endl;
 			GTFile.close();
 			SampleFile.close();
 
@@ -118,6 +118,165 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 
 
 }
+
+/***JointByJointCostCalculation:********************************************
+	Warning this should always be run after completing the JointSelection array
+-Extract data from both info.bin files
+- Find if they are represented by the same joints
+*******************************************************************/
+
+void Compare::JointByJointCostCalculation() {
+
+	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
+		if (JointSelection[i]) {
+
+			//Get the array of positions from both Sample and
+			char *jointName;
+			switch (i) {
+			case 0:
+				jointName = "HEAD";
+				break;
+			case 1:
+				jointName = "NECK";
+				break;
+			case 2:
+				jointName = "L_SHOULDER";
+				break;
+			case 3:
+				jointName = "R_SHOULDER";
+				break;
+			case 4:
+				jointName = "L_ELBOW";
+				break;
+			case 5:
+				jointName = "R_ELBOW";
+				break;
+			case 6:
+				jointName = "L_HAND";
+				break;
+			case 7:
+				jointName = "R_HAND";
+				break;
+			case 8:
+				jointName = "TORSO";
+				break;
+			case 9:
+				jointName = "L_HIP";
+				break;
+			case 10:
+				jointName = "R_HIP";
+				break;
+			case 11:
+				jointName = "L_KNEE";
+				break;
+			case 12:
+				jointName = "R_KNEE";
+				break;
+			case 13:
+				jointName = "L_FOOT";
+				break;
+			case 14:
+				jointName = "R_FOOT";
+				break;
+			default: //Optional
+				jointName = "UNKNOWN";
+			}
+
+			char *prefix = "Joint_";
+			char* postfix = ".bin";
+
+			char finalnGTdir[200];
+			char finalnSamplesdir[200];
+
+			// GT
+			strcpy_s(finalnGTdir, pathSGTFile);
+			strcat_s(finalnGTdir, prefix);
+			strcat_s(finalnGTdir, jointName);
+			strcat_s(finalnGTdir, postfix);
+
+			int* cols;
+			int * rows;
+			if (checkFileExistence(finalnGTdir)) {
+				// If file found
+				//1st get dimensions
+				GetLogDimensions(finalnGTdir, rows, cols); 
+				float **theGTArray;
+				//2nd initialize a matrix with the dimensions
+				theGTArray = new float*[*rows];		
+				for (int i = 0; i < *rows; ++i)
+					theGTArray[i] = new float[*cols];
+				//3rd get the array values
+				
+
+			}
+			else {
+				cout << "Error File Not found: " << finalnGTdir << endl;
+				break;
+			}
+			// Samples
+			strcpy_s(finalnSamplesdir, pathSGTFile);
+			strcat_s(finalnSamplesdir, prefix);
+			strcat_s(finalnSamplesdir, jointName);
+			strcat_s(finalnSamplesdir, postfix);
+
+			if (checkFileExistence(finalnGTdir)) {
+				//1st get dimensions
+				GetLogDimensions(finalnSamplesdir, rows, cols);
+				float **theSamplesArray;
+				//2nd initialize a matrix with the dimensions
+				theSamplesArray = new float*[*rows];
+				for (int i = 0; i < *rows; ++i)
+					theSamplesArray[i] = new float[*cols];
+				//3rd get the array values
+
+
+			}
+			else {
+				cout << "Error File Not found: " << finalnSamplesdir << endl;
+				break;
+			}
+		}
+	}
+		 
+
+
+
+}
+
+
+
+
+
+/***GetLogDimensions:***************************************
+Read a whole set of joints allocated in the same frame
+******************************************************************/
+void Compare::GetLogDimensions(char* nameFile, int * rows, int* cols) {
+
+	ifstream outfile(nameFile);
+	string  line;
+	std::string  data;
+	getline(outfile, line);
+	std::stringstream   linestream(line);
+	bool onetime = true;
+	//cout << line << endl;
+
+	while (getline(linestream, data, ';')) {
+		//linestream >> frames;
+		if (onetime) {
+			*rows = stoi(data);
+			onetime = false;
+		}
+		else {
+			*cols = stoi(data);
+
+		}
+	}
+	outfile.close();
+}
+
+
+
+
 
 /***GetJointSelection:********************************************
 		-First we have to read the details of both:
@@ -219,9 +378,94 @@ bool Compare::checkFileExistence(const char* name) {
 	return (stat(name, &buffer) == 0);
 }
 
-/***SetFromNTSkeleton:********************************************
-Copy a NTSkeleton from another already existing.
-Just mimic all parameter´s values
-*******************************************************************/
 
 
+
+/***ReadFrameRegisterToArray:************************************
+Read all the frame positions recorded in a file. All the frame positions will be stored in an array
+that is easy to work with.
+
+Inputs:
+	-	declared float array
+	-	declared float array
+******************************************************************/
+void Compare::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
+
+	string  line;
+	bool firstLine = true;
+	bool error = false;
+	int row, col = 0;
+	int rowCount = 0, colCount = 0;
+
+	float **theArray;
+	// Needs to be initialized to avoid error?
+	theArray = new float*[rowCount];
+	for (int i = 0; i < rowCount; ++i)
+		theArray[i] = new float[colCount];
+
+
+	ifstream outfile(nameFile);
+	while (std::getline(outfile, line))
+	{
+		//cout << line << endl;
+		std::stringstream   linestream(line);
+		std::string         data;
+
+
+		// First line in the doc - HAPPENS ONLY ONCE
+		if (firstLine) {
+			//std::getline(linestream, data);
+			bool onetime = true;
+			while (getline(linestream, data, ';')) {
+				//linestream >> frames;
+				if (onetime) {
+					rowCount = stoi(data);
+					if (sizeof(theMatrix) == rowCount) {
+						cout << "ERROR, Dimensions do not fit";
+						error = true;
+					}
+					onetime = false;
+				}
+				else {
+					colCount = stoi(data);
+					if (sizeof(theMatrix[0]) == colCount) {
+
+						cout << "ERROR, Dimensions do not fit";
+						error = true;
+					}
+
+				}
+			}
+			if (error) {
+				cout << "Exiting ReadFrameRegisterToArray()";
+				break;
+			}
+
+
+			firstLine = false;
+			cout << "firstLine passed" << endl;
+		}
+		else {
+			row = 0;
+			while (getline(linestream, data, ';')) {
+				//linestream >> type;
+
+				theMatrix[row][col] = stof(data);
+				row++;
+
+			}
+			col++;
+			//cout << col << endl;
+		}
+	}
+
+
+	if (!outfile.eof())
+	{
+		cerr << "Error in reading file!\n";
+	}
+	outfile.close();
+	cout << "finished   " << theMatrix[1][1] << endl;
+	//return theArray;
+
+}

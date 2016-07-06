@@ -41,9 +41,8 @@ public:
 	//void InsertRegisterNTSkeleton(NTSkeleton theSkeleton);
 
 	void StartReading();
-	void ReadFrameRegisterToArray(string nameFile, float ** theMatrix); // LINE BY LINE?
+	void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix); 
 	void EndReading();
-	void CreateEvaluationReport();
 	void SeparateSingleJoint(JointType theType, char * directory,bool recordPostFix, bool recordPosition, bool recordOrientation, bool recordConfidence);
 	void GetLogDimensions(char* nameFile, int * rows, int* cols);
 	void CreateGestureLog(char* FileName, bool GT);

@@ -79,7 +79,8 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	for (int i = 0; i < *rowCount; ++i)
 		theArray[i] = new float[*colCount];
 
-	theRecording->ReadFrameRegisterToArray(aTestName, theArray);
+	//theRecording->ReadFrameRegisterToArray(aTestName, theArray);  // THIS CAUSES RANDOM CRASHES
+	cout << "finished outside  " << theArray[1][1] << endl;
 	theRecording->EnableRecordingOfJoint(JOINT_HEAD);
 	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_FOOT);
 	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_HAND);

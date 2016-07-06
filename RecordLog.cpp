@@ -616,12 +616,14 @@ void RecordLog::GetLogDimensions(char* nameFile, int * rows, int* cols) {
 
 
 /***ReadFrameRegisterToArray:************************************
-Read a whole set of joints allocated in the same frame
+Read all the frame positions recorded in a file. All the frame positions will be stored in an array
+that is easy to work with.
 ******************************************************************/
-void RecordLog::ReadFrameRegisterToArray(string nameFile, float ** theMatrix) {
+void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 
 	string  line;
 	bool firstLine = true;
+	bool error = false;
 	int row, col = 0;
 	int rowCount = 0, colCount = 0;
 
@@ -630,8 +632,6 @@ void RecordLog::ReadFrameRegisterToArray(string nameFile, float ** theMatrix) {
 	theArray = new float*[rowCount];
 	for (int i = 0; i < rowCount; ++i)
 		theArray[i] = new float[colCount];
-
-	cout << "Step 1 passed" << endl;
 
 
 	ifstream outfile(nameFile);
@@ -650,18 +650,23 @@ void RecordLog::ReadFrameRegisterToArray(string nameFile, float ** theMatrix) {
 				//linestream >> frames;
 				if(onetime){
 					rowCount = stoi(data);
+					/*
 					if (sizeof(theMatrix) == rowCount) {
 						cout << "ERROR, Dimensions do not fit";
+						error = true;
 					}
+					*/
 					onetime = false;
 				}
 				else{
 					colCount = stoi(data);
+					/*
 					if (sizeof(theMatrix[0]) == colCount) {
-						//my_array.size(); /* size of y */
-						//my_array[0].size(); /* size of x */
 						cout << "ERROR, Dimensions do not fit";
+						error = true;
 					}
+					*/
+
 					/*
 					colCount = stoi(data);
 					theArray = new float*[rowCount];
@@ -670,6 +675,12 @@ void RecordLog::ReadFrameRegisterToArray(string nameFile, float ** theMatrix) {
 					*/
 				}
 			}
+			if (error) {
+				cout << "Exiting ReadFrameRegisterToArray()";
+				break;
+			}
+
+
 			firstLine = false;
 			cout << "firstLine passed" << endl;
 		}
@@ -708,10 +719,3 @@ void RecordLog::EndReading() {
 
 
 
-/***CreateEvaluationReport:************************************
-Create a log specifiyng the data from the evaluation between 
-Ground Truth and the performance
-*******************************************************************/
-void RecordLog::CreateEvaluationReport() {
-	theFile.close();
-}
