@@ -53,6 +53,24 @@ cost is incurred).  See the "Case Study" (top level subtopic).
 {
 public:
 	Spline();
+	Spline(double*x, double*y);
+
+	struct Coeff {
+		public: double a, b, c, d;
+		Coeff()
+		{
+
+		}
+	};
+
+	double*x;
+	double*y;
+	Coeff*coeffx;
+	Coeff*coeffy;
+	int size;
+
+	void run();
+
 	~Spline();
 };
 

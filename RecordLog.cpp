@@ -286,8 +286,8 @@ void RecordLog::CreateGestureLog(char* FileName, bool GT) {
 	*/ 
 
 
-	ifstream src("./OutputLog.txt"); //PROBLEM - Sometimes crashes?!
-	ofstream dest(copyOutputLogNewPath);
+	ifstream src("./OutputLog.txt", std::ios::binary); //PROBLEM - Sometimes crashes?!
+	ofstream dest(copyOutputLogNewPath, std::ios::binary);
 
 	dest << src.rdbuf();
 	src.close();
@@ -298,7 +298,7 @@ void RecordLog::CreateGestureLog(char* FileName, bool GT) {
 	strcat_s(copyOutputLogNewPath, datafilename);
 	cout << "the path to data: " << copyOutputLogNewPath << endl;
 	//Create a file with the joint info
-	ofstream datafile(copyOutputLogNewPath);
+	ofstream datafile(copyOutputLogNewPath, std::ios::binary);
 
 	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
 		if (JointSelection[i]) {
@@ -479,8 +479,8 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool rec
 
 		//Open files
 
-		ofstream infile(finalname);
-		ifstream outfile("OutputLog.txt");
+		ofstream infile(finalname, std::ios::binary);
+		ifstream outfile("OutputLog.txt", std::ios::binary);
 		//theFile.open(name, ios::in);
 		//std::ofstream infile("./SingleJointRecord/InputLog.txt");
 
@@ -592,7 +592,7 @@ Read a whole set of joints allocated in the same frame
 ******************************************************************/
 void RecordLog::GetLogDimensions(char* nameFile, int * rows, int* cols) {
 
-	ifstream outfile(nameFile);
+	ifstream outfile(nameFile, std::ios::binary);
 	string  line;
 	std::string  data;
 	getline(outfile, line);
@@ -629,12 +629,12 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 
 	float **theArray;
 	// Needs to be initialized to avoid error?
+
 	theArray = new float*[rowCount];
 	for (int i = 0; i < rowCount; ++i)
 		theArray[i] = new float[colCount];
 
-
-	ifstream outfile(nameFile);
+	ifstream outfile(nameFile, std::ios::binary);
 	while (std::getline(outfile, line))
 	{
 		//cout << line << endl;
@@ -673,7 +673,11 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 					for (int i = 0; i < rowCount; ++i)
 					theArray[i] = new float[colCount];
 					*/
+					theArray = new float*[rowCount];
+					for (int i = 0; i < rowCount; ++i)
+						theArray[i] = new float[colCount];
 				}
+				
 			}
 			if (error) {
 				cout << "Exiting ReadFrameRegisterToArray()";
@@ -689,15 +693,26 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 			while (getline(linestream, data, ';')) {
 				//linestream >> type;
 				
-				theMatrix[row][col] = stof(data);
-				row++;
-
+				theArray[row][col] = stof(data);
+				cout << row << endl;
+				row++;				
 			}
+
+			if (rowCount-1 == row) {
+				cout << rowCount <<"   reached end of " << endl;
+				break;
+			}
+			cout << col << endl;
 			col++;
+			
 			//cout << col << endl;
 		}
 	}
 
+
+	for (int i = 0; i < rowCount; i++)
+		for (int j = 0; j < colCount ; j++)
+			theMatrix[i][j] = theArray[i][j];
 
 	if (!outfile.eof())
 	{

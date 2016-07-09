@@ -60,7 +60,7 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 	//strcat_s(finalname, jointName);
 	checkSample = Compare::checkFileExistence(finalname);
 	if (checkSample) {
-		SampleFile = ifstream(finalname);
+		SampleFile = ifstream(finalname, std::ios::binary);
 		cout << "the Samples file exists " << checkSample << endl;
 	}
 	else {
@@ -81,7 +81,7 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 	//strcat_s(finalname, jointName);
 	checkGT = Compare::checkFileExistence(finalname);
 	if (checkGT) {
-		GTFile = ifstream(finalname);
+		GTFile = ifstream(finalname, std::ios::binary);
 		cout << "the GT file exists " << checkGT << endl;
 	}
 	else {
@@ -194,8 +194,8 @@ void Compare::JointByJointCostCalculation() {
 			strcat_s(finalnGTdir, jointName);
 			strcat_s(finalnGTdir, postfix);
 
-			int* cols;
-			int * rows;
+			int* cols = NULL;
+			int * rows = NULL;
 			if (checkFileExistence(finalnGTdir)) {
 				// If file found
 				//1st get dimensions
@@ -252,7 +252,7 @@ Read a whole set of joints allocated in the same frame
 ******************************************************************/
 void Compare::GetLogDimensions(char* nameFile, int * rows, int* cols) {
 
-	ifstream outfile(nameFile);
+	ifstream outfile(nameFile, std::ios::binary);
 	string  line;
 	std::string  data;
 	getline(outfile, line);
@@ -404,7 +404,7 @@ void Compare::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 		theArray[i] = new float[colCount];
 
 
-	ifstream outfile(nameFile);
+	ifstream outfile(nameFile, std::ios::binary);
 	while (std::getline(outfile, line))
 	{
 		//cout << line << endl;
