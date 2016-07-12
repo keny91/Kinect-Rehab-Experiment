@@ -3,11 +3,13 @@
 
 
 Compare::Compare() {
-	
+	Cost = 0;
 }
 
 Compare::Compare(char* nameSampleFile, char* nameGTFile) {
+	Cost = 0;
 	makeComparison(nameSampleFile, nameGTFile);
+	JointByJointCostCalculation();
 }
 
 Compare::~Compare()
@@ -26,6 +28,11 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 
 	/*     15 total
 	HEAD
+
+
+
+
+
 	LEFT_ELBOW
 	LEFT_FOOT
 	LEFT_HAND
@@ -51,11 +58,14 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 	char *directory = "./Samples/";
 	char *dataFile = "info.bin";
 	char finalname[200];
+	pathSampleFile = new char[200];
 	strcpy_s(finalname, directory);
 	strcat_s(finalname, nameSampleFile);
 	strcat_s(finalname, "/");
-	pathSampleFile = finalname;
-	//strcpy_s(pathSampleFile, finalname);  // init the path to folder
+	memcpy(pathSampleFile, finalname, 200);  // init the path to folder
+	//strcpy_s(pathSampleFile, finalname);
+	//pathSampleFile = finalname;
+	//strcpy_s(pathSampleFile, finalname);  
 	strcat_s(finalname, dataFile);
 	//strcat_s(finalname, jointName);
 	checkSample = Compare::checkFileExistence(finalname);
@@ -75,8 +85,9 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 	strcpy_s(finalname, directory);
 	strcat_s(finalname, nameGTFile);
 	strcat_s(finalname, "/");
-	pathSGTFile = finalname; // init the path to folder
-
+	pathSGTFile = new char[200];
+	//pathSGTFile = finalname; // init the path to folder
+	memcpy(pathSGTFile, finalname, 200);
 	strcat_s(finalname, dataFile);
 	//strcat_s(finalname, jointName);
 	checkGT = Compare::checkFileExistence(finalname);
@@ -102,6 +113,7 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 
 
 			// THEN MAKE THE COMPARISON BETWEEN THE 2 ARRAYS
+
 		}
 
 
@@ -126,6 +138,9 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 *******************************************************************/
 
 void Compare::JointByJointCostCalculation() {
+
+	float **theSamplesArray;
+	float **theGTArray;
 
 	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
 		if (JointSelection[i]) {
@@ -182,7 +197,7 @@ void Compare::JointByJointCostCalculation() {
 				jointName = "UNKNOWN";
 			}
 
-			char *prefix = "Joint_";
+			char* prefix = "Joint_";
 			char* postfix = ".bin";
 
 			char finalnGTdir[200];
@@ -194,47 +209,58 @@ void Compare::JointByJointCostCalculation() {
 			strcat_s(finalnGTdir, jointName);
 			strcat_s(finalnGTdir, postfix);
 
-			int* cols = NULL;
-			int * rows = NULL;
+			int* cols = new int();
+			int * rowsGT = new int();
 			if (checkFileExistence(finalnGTdir)) {
 				// If file found
 				//1st get dimensions
-				GetLogDimensions(finalnGTdir, rows, cols); 
-				float **theGTArray;
+				GetLogDimensions(finalnGTdir, rowsGT, cols);
+				//float **theGTArray;
 				//2nd initialize a matrix with the dimensions
-				theGTArray = new float*[*rows];		
-				for (int i = 0; i < *rows; ++i)
+				theGTArray = new float*[*rowsGT];
+				for (int i = 0; i < *rowsGT; ++i)
 					theGTArray[i] = new float[*cols];
 				//3rd get the array values
-				
+				ReadFrameRegisterToArray(finalnGTdir, theGTArray);
 
 			}
 			else {
 				cout << "Error File Not found: " << finalnGTdir << endl;
 				break;
 			}
+
+
+
 			// Samples
 			strcpy_s(finalnSamplesdir, pathSGTFile);
 			strcat_s(finalnSamplesdir, prefix);
 			strcat_s(finalnSamplesdir, jointName);
 			strcat_s(finalnSamplesdir, postfix);
 
+//			int* cols = NULL;
+			int * rowsSamples = new int();
+
 			if (checkFileExistence(finalnGTdir)) {
 				//1st get dimensions
-				GetLogDimensions(finalnSamplesdir, rows, cols);
-				float **theSamplesArray;
+				GetLogDimensions(finalnSamplesdir, rowsSamples, cols);
+				//float **theSamplesArray;
 				//2nd initialize a matrix with the dimensions
-				theSamplesArray = new float*[*rows];
-				for (int i = 0; i < *rows; ++i)
+				theSamplesArray = new float*[*rowsSamples];
+				for (int i = 0; i < *rowsSamples; ++i)
 					theSamplesArray[i] = new float[*cols];
 				//3rd get the array values
-
+				ReadFrameRegisterToArray(finalnSamplesdir, theSamplesArray);
 
 			}
 			else {
 				cout << "Error File Not found: " << finalnSamplesdir << endl;
 				break;
 			}
+
+			// Once both files are loaded proceed to do the comparison between arrays
+			dtw3d* DTWObject = new dtw3d(theGTArray, theSamplesArray, *rowsGT, *rowsSamples);
+			Cost += DTWObject->theCost;
+			delete DTWObject;
 		}
 	}
 		 
@@ -246,6 +272,116 @@ void Compare::JointByJointCostCalculation() {
 
 
 
+/***ReadFrameRegisterToArray:************************************
+Read all the frame positions recorded in a file. All the frame positions will be stored in an array
+that is easy to work with.
+******************************************************************/
+void Compare::ReadFrameRegisterToArrays(char* nameFile, float ** theMatrix) {
+
+	string  line;
+	bool firstLine = true;
+	bool error = false;
+	int row, col = 0;
+	int rowCount = 0, colCount = 0;
+
+	float **theArray;
+	// Needs to be initialized to avoid error?
+
+	theArray = new float*[rowCount];
+	for (int i = 0; i < rowCount; ++i)
+		theArray[i] = new float[colCount];
+
+	ifstream outfile(nameFile, std::ios::binary);
+	while (std::getline(outfile, line))
+	{
+		//cout << line << endl;
+		std::stringstream   linestream(line);
+		std::string         data;
+
+
+		// First line in the doc - HAPPENS ONLY ONCE
+		if (firstLine) {
+			//std::getline(linestream, data);
+			bool onetime = true;
+			while (getline(linestream, data, ';')) {
+				//linestream >> frames;
+				if (onetime) {
+					rowCount = stoi(data);
+					//theRowCount = rowCount;
+					/*
+					if (sizeof(theMatrix) == rowCount) {
+					cout << "ERROR, Dimensions do not fit";
+					error = true;
+					}
+					*/
+					onetime = false;
+				}
+				else {
+					colCount = stoi(data);
+					//theColcount = colCount;
+					/*
+					if (sizeof(theMatrix[0]) == colCount) {
+					cout << "ERROR, Dimensions do not fit";
+					error = true;
+					}
+					*/
+
+					/*
+					colCount = stoi(data);
+					theArray = new float*[rowCount];
+					for (int i = 0; i < rowCount; ++i)
+					theArray[i] = new float[colCount];
+					*/
+					theArray = new float*[rowCount];
+					for (int i = 0; i < rowCount; ++i)
+						theArray[i] = new float[colCount];
+				}
+
+			}
+			if (error) {
+				cout << "Exiting ReadFrameRegisterToArray()";
+				break;
+			}
+
+
+			firstLine = false;
+			cout << "firstLine passed" << endl;
+		}
+		else {
+			row = 0;
+			while (getline(linestream, data, ';')) {
+				//linestream >> type;
+
+				theArray[row][col] = stof(data);
+				cout << row << endl;
+				row++;
+			}
+
+			if (rowCount - 1 == row) {
+				cout << rowCount << "   reached end of " << endl;
+				break;
+			}
+			cout << col << endl;
+			col++;
+
+			//cout << col << endl;
+		}
+	}
+
+
+	for (int i = 0; i < rowCount; i++)
+		for (int j = 0; j < colCount; j++)
+			theMatrix[i][j] = theArray[i][j];
+
+	if (!outfile.eof())
+	{
+		cerr << "Error in reading file!\n";
+	}
+	outfile.close();
+	cout << "finished   " << theMatrix[1][1] << endl;
+	//return theArray;
+
+}
 
 /***GetLogDimensions:***************************************
 Read a whole set of joints allocated in the same frame
@@ -288,7 +424,6 @@ bool Compare::GetJointSelection() {
 
 	inProcess = true;
 
-	Cost = 0;
 	JointSelection = new bool[NITE_JOINT_COUNT]();
 	for (int i = 0; i < NITE_JOINT_COUNT; i++)
 		JointSelection[i] = false;
@@ -394,7 +529,8 @@ void Compare::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 	string  line;
 	bool firstLine = true;
 	bool error = false;
-	int row, col = 0;
+	int row = 0;
+	int col = 0;
 	int rowCount = 0, colCount = 0;
 
 	float **theArray;
@@ -449,7 +585,7 @@ void Compare::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 			row = 0;
 			while (getline(linestream, data, ';')) {
 				//linestream >> type;
-
+				cout << row << "--" << col << endl;
 				theMatrix[row][col] = stof(data);
 				row++;
 

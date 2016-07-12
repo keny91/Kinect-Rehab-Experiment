@@ -1,4 +1,4 @@
-#include <vector>
+
 
 #ifndef DTW_H
 #define DTW_H
@@ -11,8 +11,17 @@
 
 using namespace std;
 
-namespace dtw3d {
-	double DWT3d(const std::vector<double>& t1, const std::vector<double>& t2);
-}
+class dtw3d
+{
+public:
+	double dtw3dcalulation(const std::vector<double>& t1, const std::vector<double>& t2);  //old implementation
+	//dtw3d(std::vector<vector<double>>& t1, std::vector<vector<double>>& t2);
+	dtw3d(float** t1, float** t2, int Sizet1, int sizet2);
+	float dist(float x, float y);
+	//double distV2(std::vector<double>&  V1, std::vector<double>& V2);
+	float distV2(float* V1, float* V2, int sizeLenght);
 
-#endif
+	float theCost;
+};
+
+#endif // DTW_H

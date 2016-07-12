@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include "DTW3d.h"
 
 using namespace std;
 
@@ -30,8 +31,10 @@ public:
 	void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix);
 	void JointByJointCostCalculation();
 	void GetLogDimensions(char* nameFile, int * rows, int* cols);
+	void ReadFrameRegisterToArrays(char* nameFile, float ** theMatrix);
+
 private:
-	long Cost;
+	float Cost;
 	bool * JointSelection;
 	char*SampleName;  // name of the folder inside samples
 	char*GTName;	// name of the folder storing the GT joint logs
