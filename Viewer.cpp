@@ -64,10 +64,10 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	theRecording = new RecordLog("OutputLog");
 
 
-	char* aTestName ="./SingleJointRecord/Joint_L_HAND_P.bin";
+	char* aTestName ="./Samples/CompareSample1/Joint_HEAD.bin";
 
 	//float**testarray;
-	//theComparator = new Compare("ExampleSamples", "ExampleGT");
+	//theComparator = new Compare("CompareSample1", "CompareSample1");
 	
 
 	int * rowCount, *colCount;
@@ -76,13 +76,22 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	theRecording->GetLogDimensions(aTestName, rowCount, colCount);
 
 	float **theArray;
+	//cout << rowCount << endl;
+	//cout << colCount << endl;
 	// Needs to be initialized to avoid error?
 	theArray = new float*[*rowCount];
-	for (int i = 0; i < *rowCount; ++i)
+
+	for (int i = 0; i < *rowCount; ++i) {
 		theArray[i] = new float[*colCount];
+		for (int j = 0; j < *colCount; j++) {
+			theArray[i][j] = 0;
+		}
+	}
+		
+	
 
 	theRecording->ReadFrameRegisterToArray(aTestName, theArray);  // THIS CAUSES RANDOM CRASHES
-	cout << "finished outside  " << theArray[1][1] << endl;
+	//cout << "finished outside  " << theArray[1][1] << endl;
 	theRecording->EnableRecordingOfJoint(JOINT_HEAD);
 	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_FOOT);
 	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_HAND);
@@ -95,9 +104,7 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 SampleViewer::~SampleViewer()
 {
 	Finalize();
-
 	delete[] m_pTexMap;
-
 	ms_self = NULL;
 }
 
@@ -559,7 +566,7 @@ void SampleViewer::Display()
 				else if (GetDistanceBetweenJoints(users[i].getSkeleton().getJoint(nite::JOINT_LEFT_HAND), users[i].getSkeleton().getJoint(nite::JOINT_RIGHT_HAND))<150) {
 
 						theRecording->StartRecording();	
-						cout << "Stop Recording" << endl;
+						cout << "Started Recording" << endl;
 				}
 			}
 		}

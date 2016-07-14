@@ -32,7 +32,7 @@ RecordLog::RecordLog()
 	name = newName;
 	aSkeleton = Skeleton();
 	isRecording = false;
-
+/*
 	JointList = new JointType[NITE_JOINT_COUNT]();
 	JointList[0] = JOINT_HEAD;
 	JointList[1] = JOINT_LEFT_ELBOW;
@@ -49,6 +49,25 @@ RecordLog::RecordLog()
 	JointList[12] = JOINT_RIGHT_KNEE;
 	JointList[13] = JOINT_RIGHT_SHOULDER;
 	JointList[14] = JOINT_TORSO;
+	*/
+
+	JointList = new JointType[NITE_JOINT_COUNT]();
+	JointList[0] = JOINT_HEAD;
+	JointList[1] = JOINT_NECK;
+	JointList[2] = JOINT_LEFT_SHOULDER;
+	JointList[3] = JOINT_RIGHT_SHOULDER;
+	JointList[4] = JOINT_LEFT_ELBOW;
+	JointList[5] = JOINT_RIGHT_ELBOW;
+	JointList[6] = JOINT_LEFT_HAND;
+	JointList[7] = JOINT_RIGHT_HAND;
+	JointList[8] = JOINT_TORSO;
+	JointList[9] = JOINT_LEFT_HIP;
+	JointList[10] = JOINT_RIGHT_HIP;
+	JointList[11] = JOINT_LEFT_KNEE;
+	JointList[12] = JOINT_RIGHT_KNEE;
+	JointList[13] = JOINT_LEFT_FOOT;
+	JointList[14] = JOINT_RIGHT_FOOT;
+
 
 	JointSelection = new bool[NITE_JOINT_COUNT]();
 	for (int i = 0; i < NITE_JOINT_COUNT; i++)
@@ -78,20 +97,20 @@ RecordLog::RecordLog(char* theName, bool recordPost)
 
 	JointList = new JointType[NITE_JOINT_COUNT]();
 	JointList[0] = JOINT_HEAD;
-	JointList[1] = JOINT_LEFT_ELBOW;
-	JointList[2] = JOINT_LEFT_FOOT;
-	JointList[3] = JOINT_LEFT_HAND;
-	JointList[4] = JOINT_LEFT_HIP;
-	JointList[5] = JOINT_LEFT_KNEE;
-	JointList[6] = JOINT_LEFT_SHOULDER;
-	JointList[7] = JOINT_NECK;
-	JointList[8] = JOINT_RIGHT_ELBOW;
-	JointList[9] = JOINT_RIGHT_FOOT;
-	JointList[10] = JOINT_RIGHT_HAND;
-	JointList[11] = JOINT_RIGHT_HIP;
+	JointList[1] = JOINT_NECK;
+	JointList[2] = JOINT_LEFT_SHOULDER;
+	JointList[3] = JOINT_RIGHT_SHOULDER;
+	JointList[4] = JOINT_LEFT_ELBOW;
+	JointList[5] = JOINT_RIGHT_ELBOW;
+	JointList[6] = JOINT_LEFT_HAND;
+	JointList[7] = JOINT_RIGHT_HAND;
+	JointList[8] = JOINT_TORSO;
+	JointList[9] = JOINT_LEFT_HIP;
+	JointList[10] = JOINT_RIGHT_HIP;
+	JointList[11] = JOINT_LEFT_KNEE;
 	JointList[12] = JOINT_RIGHT_KNEE;
-	JointList[13] = JOINT_RIGHT_SHOULDER;
-	JointList[14] = JOINT_TORSO;
+	JointList[13] = JOINT_LEFT_FOOT;
+	JointList[14] = JOINT_RIGHT_FOOT;
 	recordPostFix = recordPost;
 
 	// There is a correspondance between JointSelection and JointList
@@ -286,8 +305,8 @@ void RecordLog::CreateGestureLog(char* FileName, bool GT) {
 	*/ 
 
 
-	ifstream src("./OutputLog.txt", std::ios::binary); //PROBLEM - Sometimes crashes?!
-	ofstream dest(copyOutputLogNewPath, std::ios::binary);
+	ifstream src("./OutputLog.txt"); //PROBLEM - Sometimes crashes?!
+	ofstream dest(copyOutputLogNewPath);
 
 	dest << src.rdbuf();
 	src.close();
@@ -298,7 +317,7 @@ void RecordLog::CreateGestureLog(char* FileName, bool GT) {
 	strcat_s(copyOutputLogNewPath, datafilename);
 	cout << "the path to data: " << copyOutputLogNewPath << endl;
 	//Create a file with the joint info
-	ofstream datafile(copyOutputLogNewPath, std::ios::binary);
+	ofstream datafile(copyOutputLogNewPath);
 
 	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
 		if (JointSelection[i]) {
@@ -479,8 +498,8 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool rec
 
 		//Open files
 
-		ofstream infile(finalname, std::ios::binary);
-		ifstream outfile("OutputLog.txt", std::ios::binary);
+		ofstream infile(finalname);
+		ifstream outfile("OutputLog.txt");
 		//theFile.open(name, ios::in);
 		//std::ofstream infile("./SingleJointRecord/InputLog.txt");
 
@@ -592,7 +611,7 @@ Read a whole set of joints allocated in the same frame
 ******************************************************************/
 void RecordLog::GetLogDimensions(char* nameFile, int * rows, int* cols) {
 
-	ifstream outfile(nameFile, std::ios::binary);
+	ifstream outfile(nameFile);
 	string  line;
 	std::string  data;
 	getline(outfile, line);
@@ -630,11 +649,14 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 	float **theArray;
 	// Needs to be initialized to avoid error?
 
+	/*
 	theArray = new float*[rowCount];
 	for (int i = 0; i < rowCount; ++i)
 		theArray[i] = new float[colCount];
+		*/
 
-	ifstream outfile(nameFile, std::ios::binary);
+
+	ifstream outfile(nameFile);
 	while (std::getline(outfile, line))
 	{
 		//cout << line << endl;
@@ -672,10 +694,11 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 					theArray = new float*[rowCount];
 					for (int i = 0; i < rowCount; ++i)
 					theArray[i] = new float[colCount];
-					*/
+					
 					theArray = new float*[rowCount];
 					for (int i = 0; i < rowCount; ++i)
 						theArray[i] = new float[colCount];
+						*/
 				}
 				
 			}
@@ -693,33 +716,35 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 			while (getline(linestream, data, ';')) {
 				//linestream >> type;
 				
-				theArray[row][col] = stof(data);
-				cout << row << endl;
+				theMatrix[row][col] = stof(data);
+				cout << theMatrix[row][col]  << "----";
 				row++;				
 			}
+
+			cout << endl;
 
 			if (rowCount-1 == row) {
 				cout << rowCount <<"   reached end of " << endl;
 				break;
 			}
-			cout << col << endl;
+			//cout << col << endl;
 			col++;
 			
 			//cout << col << endl;
 		}
 	}
 
-
+	/*
 	for (int i = 0; i < rowCount; i++)
 		for (int j = 0; j < colCount ; j++)
 			theMatrix[i][j] = theArray[i][j];
-
+	*/
 	if (!outfile.eof())
 	{
 		cerr << "Error in reading file!\n";
 	}
 	outfile.close();
-	cout << "finished   " << theMatrix[1][1]  <<endl;
+	//cout << "finished   " << theMatrix[1][1]  <<endl;
 	//return theArray;
 
 }

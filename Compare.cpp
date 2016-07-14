@@ -70,7 +70,7 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 	//strcat_s(finalname, jointName);
 	checkSample = Compare::checkFileExistence(finalname);
 	if (checkSample) {
-		SampleFile = ifstream(finalname, std::ios::binary);
+		SampleFile = ifstream(finalname);
 		cout << "the Samples file exists " << checkSample << endl;
 	}
 	else {
@@ -92,7 +92,7 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 	//strcat_s(finalname, jointName);
 	checkGT = Compare::checkFileExistence(finalname);
 	if (checkGT) {
-		GTFile = ifstream(finalname, std::ios::binary);
+		GTFile = ifstream(finalname);
 		cout << "the GT file exists " << checkGT << endl;
 	}
 	else {
@@ -291,7 +291,7 @@ void Compare::ReadFrameRegisterToArrays(char* nameFile, float ** theMatrix) {
 	for (int i = 0; i < rowCount; ++i)
 		theArray[i] = new float[colCount];
 
-	ifstream outfile(nameFile, std::ios::binary);
+	ifstream outfile(nameFile);
 	while (std::getline(outfile, line))
 	{
 		//cout << line << endl;
@@ -388,7 +388,7 @@ Read a whole set of joints allocated in the same frame
 ******************************************************************/
 void Compare::GetLogDimensions(char* nameFile, int * rows, int* cols) {
 
-	ifstream outfile(nameFile, std::ios::binary);
+	ifstream outfile(nameFile);
 	string  line;
 	std::string  data;
 	getline(outfile, line);
@@ -539,8 +539,8 @@ void Compare::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 	for (int i = 0; i < rowCount; ++i)
 		theArray[i] = new float[colCount];
 
-
-	ifstream outfile(nameFile, std::ios::binary);
+	cout << "Reading now:  "<< nameFile << endl;
+	ifstream outfile(nameFile);
 	while (std::getline(outfile, line))
 	{
 		//cout << line << endl;
@@ -585,7 +585,7 @@ void Compare::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 			row = 0;
 			while (getline(linestream, data, ';')) {
 				//linestream >> type;
-				cout << row << "--" << col << endl;
+				//cout << row << "--" << col << endl;
 				theMatrix[row][col] = stof(data);
 				row++;
 
