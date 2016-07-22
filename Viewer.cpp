@@ -61,10 +61,10 @@ void SampleViewer::glutKeyboard(unsigned char key, int x, int y)
 SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 {
 	ms_self = this;
-	theRecording = new RecordLog("OutputLog");
+	theRecording = new RecordLog("OutputLog", true);
 
 
-	char* aTestName ="./Samples/CompareSample1/Joint_HEAD.bin";
+	
 
 	//float**testarray;
 	//theComparator = new Compare("CompareSample1", "CompareSample1");
@@ -73,6 +73,7 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	int * rowCount, *colCount;
 	rowCount = new int();
 	colCount = new int();
+	char* aTestName = "./Samples/CompareSample1/Joint_HEAD.bin";
 	theRecording->GetLogDimensions(aTestName, rowCount, colCount);
 
 	float **theArray;
@@ -80,7 +81,6 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	//cout << colCount << endl;
 	// Needs to be initialized to avoid error?
 	theArray = new float*[*rowCount];
-
 	for (int i = 0; i < *rowCount; ++i) {
 		theArray[i] = new float[*colCount];
 		for (int j = 0; j < *colCount; j++) {
@@ -91,7 +91,8 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	
 
 	theRecording->ReadFrameRegisterToArray(aTestName, theArray);  // THIS CAUSES RANDOM CRASHES
-	//cout << "finished outside  " << theArray[1][1] << endl;
+	cout << "===================\nArray Stored\n===================" << endl;
+																  //cout << "finished outside  " << theArray[1][1] << endl;
 	theRecording->EnableRecordingOfJoint(JOINT_HEAD);
 	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_FOOT);
 	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_HAND);

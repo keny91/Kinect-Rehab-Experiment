@@ -15,6 +15,7 @@
 #include <sstream>
 #include <windows.h>
 #include <direct.h>
+#include "FileHandler.h"
 
 
 #define NITE_JOINT_COUNT 15

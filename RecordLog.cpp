@@ -133,15 +133,8 @@ RecordLog::~RecordLog()
 Create Required folders for the project structures
 *****************************************************/
 void RecordLog::InitFolders() {
-	const char* Folder = "./GT";
-	if (_mkdir(Folder) ||
-		ERROR_ALREADY_EXISTS == GetLastError())
-		cout << "Created Directory:  " << Folder << endl;
-
-	Folder = "./Samples";
-	if (_mkdir(Folder) ||
-		ERROR_ALREADY_EXISTS == GetLastError())
-		cout << "Created Directory: " << Folder << endl;
+	FileHandler::CreateFolder("./GT");
+	FileHandler::CreateFolder("./Samples");
 }
 
 
@@ -639,7 +632,6 @@ Read all the frame positions recorded in a file. All the frame positions will be
 that is easy to work with.
 ******************************************************************/
 void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
-
 	string  line;
 	bool firstLine = true;
 	bool error = false;
@@ -652,40 +644,37 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 	/*
 	theArray = new float*[rowCount];
 	for (int i = 0; i < rowCount; ++i)
-		theArray[i] = new float[colCount];
-		*/
-
+	theArray[i] = new float[colCount];
+	*/
+	//cout << line << endl;
+	std::string         data;
 
 	ifstream outfile(nameFile);
-	while (std::getline(outfile, line))
+	while (getline(outfile, line))
 	{
-		//cout << line << endl;
 		std::stringstream   linestream(line);
-		std::string         data;
-
-
 		// First line in the doc - HAPPENS ONLY ONCE
 		if (firstLine) {
 			//std::getline(linestream, data);
 			bool onetime = true;
 			while (getline(linestream, data, ';')) {
 				//linestream >> frames;
-				if(onetime){
+				if (onetime) {
 					rowCount = stoi(data);
 					/*
 					if (sizeof(theMatrix) == rowCount) {
-						cout << "ERROR, Dimensions do not fit";
-						error = true;
+					cout << "ERROR, Dimensions do not fit";
+					error = true;
 					}
 					*/
 					onetime = false;
 				}
-				else{
+				else {
 					colCount = stoi(data);
 					/*
 					if (sizeof(theMatrix[0]) == colCount) {
-						cout << "ERROR, Dimensions do not fit";
-						error = true;
+					cout << "ERROR, Dimensions do not fit";
+					error = true;
 					}
 					*/
 
@@ -694,19 +683,17 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 					theArray = new float*[rowCount];
 					for (int i = 0; i < rowCount; ++i)
 					theArray[i] = new float[colCount];
-					
+
 					theArray = new float*[rowCount];
 					for (int i = 0; i < rowCount; ++i)
-						theArray[i] = new float[colCount];
-						*/
+					theArray[i] = new float[colCount];
+					*/
 				}
-				
 			}
 			if (error) {
 				cout << "Exiting ReadFrameRegisterToArray()";
 				break;
 			}
-
 
 			firstLine = false;
 			cout << "firstLine passed" << endl;
@@ -715,29 +702,29 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 			row = 0;
 			while (getline(linestream, data, ';')) {
 				//linestream >> type;
-				
+
 				theMatrix[row][col] = stof(data);
-				cout << theMatrix[row][col]  << "----";
-				row++;				
+				cout << theMatrix[row][col] << "----";
+				row++;
 			}
 
 			cout << endl;
 
-			if (rowCount-1 == row) {
-				cout << rowCount <<"   reached end of " << endl;
+			if (rowCount - 1 == row) {
+				cout << rowCount << "   reached end of " << endl;
 				break;
 			}
 			//cout << col << endl;
 			col++;
-			
+
 			//cout << col << endl;
 		}
 	}
 
 	/*
 	for (int i = 0; i < rowCount; i++)
-		for (int j = 0; j < colCount ; j++)
-			theMatrix[i][j] = theArray[i][j];
+	for (int j = 0; j < colCount ; j++)
+	theMatrix[i][j] = theArray[i][j];
 	*/
 	if (!outfile.eof())
 	{
@@ -746,7 +733,6 @@ void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
 	outfile.close();
 	//cout << "finished   " << theMatrix[1][1]  <<endl;
 	//return theArray;
-
 }
 
 
