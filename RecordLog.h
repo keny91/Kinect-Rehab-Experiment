@@ -23,8 +23,12 @@
 using namespace std;
 using namespace nite;
 
-
+//Additional Functions in AdditionalFunctions.cpp
 bool checkFileExistence(const char* name);
+char *Int2JointIndexing(int n);
+Point3f GetRelativePosition(Point3f Origin, Point3f Target);
+void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix, bool alt);
+//float GetDistanceBetweenJoints(nite::SkeletonJoint JointA, nite::SkeletonJoint JointB);
 
 class RecordLog
 {
@@ -38,15 +42,14 @@ public:
 	void StartRecording();
 	void StopRecording();
 	void InsertRegisterSkeleton(Skeleton theSkeleton, int frameint, int BodyID);
-	Point3f GetRelativePosition(SkeletonJoint Origin, SkeletonJoint Target);
 	//void InsertRegisterNTSkeleton(NTSkeleton theSkeleton);
 
 	void StartReading();
-	void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix); 
+	//void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix); 
 	void EndReading();
-	void SeparateSingleJoint(JointType theType, char * directory,bool recordPostFix, bool recordPosition, bool recordOrientation, bool recordConfidence);
-	void GetLogDimensions(char* nameFile, int * rows, int* cols);
-	void CreateGestureLog(char* FileName, bool GT);
+	void SeparateSingleJoint(JointType theType, char * directory, Point3f theRelativePoint, bool recordPostFix, bool recordPosition, bool recordOrientation, bool recordConfidence);
+	void GetLogDimensions(char* nameFile, int * rows, int* cols, bool alt = true);
+	void CreateGestureLog(char* FileName, bool GT, Point3f RelativePoint);
 	void EnableRecordingOfJoint(JointType theType);
 	void DisableRecordingOfJoint(JointType theType);
 	void ChangeName(char* name);

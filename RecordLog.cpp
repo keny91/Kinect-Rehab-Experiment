@@ -263,7 +263,7 @@ void RecordLog::DisableRecordingOfJoint(JointType theType) {
 /***CreateGestureLog:***************************************
 Read a whole set of joints allocated in the same frame
 ******************************************************************/
-void RecordLog::CreateGestureLog(char* FileName, bool GT) {
+void RecordLog::CreateGestureLog(char* FileName, bool GT, Point3f RelativePoint) {
 	char * FolderName;
 	char directory[200];
 	if (GT)
@@ -315,7 +315,7 @@ void RecordLog::CreateGestureLog(char* FileName, bool GT) {
 	for (int i = 0; i < NITE_JOINT_COUNT; i++) {
 		if (JointSelection[i]) {
 			datafile << i << ";" << 1 << endl; // 1 PER LINE
-			SeparateSingleJoint(JointList[i], directory,false, true, false, false);
+			SeparateSingleJoint(JointList[i], directory,RelativePoint,false, true, false, false);
 			cout << "Created Joint Type log: " << JointList[i] << endl;
 		}
 		else
@@ -372,60 +372,11 @@ Joint2: ...
 Frame/body/SkeletonState
 ...
 *******************************************************************/
-void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool recordPostFix = false,bool recordPosition =true, bool recordOrientation=false, bool recordConfidence=false) {
+void RecordLog::SeparateSingleJoint(JointType theType, char* directory , Point3f theRelativePoint ,bool recordPostFix = false,bool recordPosition =true, bool recordOrientation=false, bool recordConfidence=false) {
 
 	if(!isRecording){
-
-		char *jointName;
-		switch (theType) {
-		case 0:
-			jointName = "HEAD";
-			break; 
-		case 1:
-			jointName = "NECK";
-			break;
-		case 2:
-			jointName = "L_SHOULDER";
-			break;
-		case 3:
-			jointName = "R_SHOULDER";
-			break;
-		case 4:
-			jointName = "L_ELBOW";
-			break;
-		case 5:
-			jointName = "R_ELBOW";
-			break;
-		case 6:
-			jointName = "L_HAND";
-			break;
-		case 7:
-			jointName = "R_HAND";
-			break;
-		case 8:
-			jointName = "TORSO";
-			break;
-		case 9:
-			jointName = "L_HIP";
-			break;
-		case 10:
-			jointName = "R_HIP";
-			break;
-		case 11:
-			jointName = "L_KNEE";
-			break;
-		case 12:
-			jointName = "R_KNEE";
-			break;
-		case 13:
-			jointName = "L_FOOT";
-			break;
-		case 14:
-			jointName = "R_FOOT";
-			break;
-		default: //Optional
-			jointName = "UNKNOWN";
-		}
+		//int eq = theType;
+		char *jointName = Int2JointIndexing(theType);
 
 
 		int numColumns = 0;
@@ -444,9 +395,11 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool rec
 		char* postfix = ".bin";
 		//char theName[200];
 		char finalname[200];
+		char finalnameAlt[200];
 		char*posPostfix = "_P";
 		char*oriPostfix = "_O";
 		char*confPostfix = "_C";
+		char*AltPostfix = "Alt";
 		int totalFrames;
 		//ostringstream convert;
 		//convert << theType;
@@ -458,6 +411,7 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool rec
 		strcat_s(finalname, prefix);
 		strcat_s(finalname, jointName);
 
+		
 
 		//Only if we are recording postfix
 		if(recordPostFix){
@@ -473,6 +427,10 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool rec
 				strcat_s(finalname, confPostfix);
 			}
 		}
+
+		strcpy_s(finalnameAlt, finalname);
+		strcat_s(finalnameAlt, AltPostfix);
+		strcat_s(finalnameAlt, postfix);
 		strcat_s(finalname, postfix);
 
 		
@@ -492,6 +450,7 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool rec
 		//Open files
 
 		ofstream infile(finalname);
+		ofstream infileAlt(finalnameAlt);
 		ifstream outfile("OutputLog.txt");
 		//theFile.open(name, ios::in);
 		//std::ofstream infile("./SingleJointRecord/InputLog.txt");
@@ -511,6 +470,7 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool rec
 				//std::getline(linestream, data);
 				linestream >> frames;
 				infile << frames << ";" << numColumns << endl;
+				infileAlt << frames << ";" << numColumns << ";" << theRelativePoint.x << ";" << theRelativePoint.y << ";" << theRelativePoint.z << endl;
 				//cout << frames << "HAPPENS ONLY ONCE" << endl;
 				firstLine = false;
 			}
@@ -538,22 +498,35 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool rec
 					}
 					//cout << type << endl;
 					if(type == theType){
-						if(recordPosition)
+						if(recordPosition){
 						infile << frameInfo[0] << ";" << frameInfo[1] << ";" << frameInfo[2];
+						//Point3f oriPosition = Point3f(frameInfo[0], frameInfo[1], frameInfo[2]);
+						Point3f finalPosition = Point3f(frameInfo[0], frameInfo[1], frameInfo[2]);
+						Point3f relativePosition = GetRelativePosition(theRelativePoint, finalPosition);
+						infileAlt << relativePosition.x << ";" << relativePosition.y << ";" << relativePosition.z;
+						}
 						if (recordOrientation) {
-							if (recordPosition)
+							if (recordPosition) {
 								infile << ";";
+								
+							}
+								
 							infile << frameInfo[3] << ";" << frameInfo[4] << ";" << frameInfo[5] << ";" << frameInfo[6];
-
+							infileAlt << frameInfo[3] << ";" << frameInfo[4] << ";" << frameInfo[5] << ";" << frameInfo[6];
 							
 						}
 						if (recordConfidence) {
-							if (recordPosition || recordOrientation)
+							if (recordPosition || recordOrientation) {
 								infile << ";";
+								infileAlt << ";";
+							}
+								
 							infile << frameInfo[7] << ";" << frameInfo[8];
+							infileAlt << frameInfo[7] << ";" << frameInfo[8];
 						}
 							
 						infile << endl;
+						infileAlt << endl;
 					}
 					//std::getline(linestream, data, ';');
 					//linestream >> posx >> posy >> val3 >> val4;
@@ -577,24 +550,11 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory ,bool rec
 
 		outfile.close();
 		infile.close();
+		infileAlt.close();
 		}
 
 }
 
-
-/***GetRelativePosition:************************************
-Get the relative position vector from a joint to another
-******************************************************************/
-
-Point3f RecordLog::GetRelativePosition(SkeletonJoint Origin, SkeletonJoint Target) {
-	Point3f coordinates;
-	float x, y, z;
-	x = Target.getPosition().x - Origin.getPosition().x;
-	y = Target.getPosition().y - Origin.getPosition().y;
-	z = Target.getPosition().z - Origin.getPosition().z;
-	coordinates.set(x, y, z);
-	return coordinates;
-}
 
 
 
@@ -602,7 +562,7 @@ Point3f RecordLog::GetRelativePosition(SkeletonJoint Origin, SkeletonJoint Targe
 /***GetLogDimensions:***************************************
 Read a whole set of joints allocated in the same frame
 ******************************************************************/
-void RecordLog::GetLogDimensions(char* nameFile, int * rows, int* cols) {
+void RecordLog::GetLogDimensions(char* nameFile, int * rows, int* cols, bool alt) {
 
 	ifstream outfile(nameFile);
 	string  line;
@@ -610,130 +570,67 @@ void RecordLog::GetLogDimensions(char* nameFile, int * rows, int* cols) {
 	getline(outfile, line);
 	std::stringstream   linestream(line);
 	bool onetime = true;
+	bool error = false;
+	Point3f theRelativePoint = Point3f();
 		//cout << line << endl;
 
-	while (getline(linestream, data, ';')) {
-		//linestream >> frames;
-		if (onetime) {
-			*rows = stoi(data);
-			onetime = false;
-		}
-		else {
-			*cols = stoi(data);
-
-		}
-	}
-	outfile.close();
-}
-
-
-/***ReadFrameRegisterToArray:************************************
-Read all the frame positions recorded in a file. All the frame positions will be stored in an array
-that is easy to work with.
-******************************************************************/
-void RecordLog::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
-	string  line;
-	bool firstLine = true;
-	bool error = false;
-	int row, col = 0;
-	int rowCount = 0, colCount = 0;
-
-	float **theArray;
-	// Needs to be initialized to avoid error?
-
-	/*
-	theArray = new float*[rowCount];
-	for (int i = 0; i < rowCount; ++i)
-	theArray[i] = new float[colCount];
-	*/
-	//cout << line << endl;
-	std::string         data;
-
-	ifstream outfile(nameFile);
-	while (getline(outfile, line))
-	{
-		std::stringstream   linestream(line);
-		// First line in the doc - HAPPENS ONLY ONCE
-		if (firstLine) {
+		if (alt) {
 			//std::getline(linestream, data);
 			bool onetime = true;
+			bool secondtime = false;
+			bool thirdTime = false;
+			bool fouthTime = false;
+			bool fifthTime = false;
+
 			while (getline(linestream, data, ';')) {
 				//linestream >> frames;
 				if (onetime) {
-					rowCount = stoi(data);
-					/*
-					if (sizeof(theMatrix) == rowCount) {
-					cout << "ERROR, Dimensions do not fit";
-					error = true;
-					}
-					*/
+					*rows = stoi(data);
 					onetime = false;
+					secondtime = true;
+
+				}
+				else if (secondtime) {
+					*cols = stoi(data);
+					secondtime = false;
+					thirdTime = true;
+				}
+				else if (thirdTime) {
+					theRelativePoint.x = stoi(data);
+					thirdTime = false;
+					fouthTime = true;
+				}
+				else if (fouthTime) {
+					theRelativePoint.y = stoi(data);
+					fouthTime = false;
+					fifthTime = true;
+				}
+				else if (fifthTime) {
+					theRelativePoint.z = stoi(data);
+					fifthTime = false;
 				}
 				else {
-					colCount = stoi(data);
-					/*
-					if (sizeof(theMatrix[0]) == colCount) {
-					cout << "ERROR, Dimensions do not fit";
-					error = true;
-					}
-					*/
 
-					/*
-					colCount = stoi(data);
-					theArray = new float*[rowCount];
-					for (int i = 0; i < rowCount; ++i)
-					theArray[i] = new float[colCount];
-
-					theArray = new float*[rowCount];
-					for (int i = 0; i < rowCount; ++i)
-					theArray[i] = new float[colCount];
-					*/
 				}
 			}
-			if (error) {
-				cout << "Exiting ReadFrameRegisterToArray()";
-				break;
-			}
 
-			firstLine = false;
-			cout << "firstLine passed" << endl;
+
 		}
-		else {
-			row = 0;
-			while (getline(linestream, data, ';')) {
-				//linestream >> type;
-
-				theMatrix[row][col] = stof(data);
-				cout << theMatrix[row][col] << "----";
-				row++;
+		else{
+		//linestream >> frames;
+			if (onetime) {
+				*rows = stoi(data);
+				onetime = false;
 			}
+			else {
+				*cols = stoi(data);
 
-			cout << endl;
-
-			if (rowCount - 1 == row) {
-				cout << rowCount << "   reached end of " << endl;
-				break;
 			}
-			//cout << col << endl;
-			col++;
-
-			//cout << col << endl;
 		}
-	}
-
-	/*
-	for (int i = 0; i < rowCount; i++)
-	for (int j = 0; j < colCount ; j++)
-	theMatrix[i][j] = theArray[i][j];
-	*/
-	if (!outfile.eof())
-	{
-		cerr << "Error in reading file!\n";
-	}
+	
 	outfile.close();
-	//cout << "finished   " << theMatrix[1][1]  <<endl;
-	//return theArray;
 }
+
 
 
 /***EndReading:************************************

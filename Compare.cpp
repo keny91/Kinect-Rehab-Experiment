@@ -28,11 +28,6 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 
 	/*     15 total
 	HEAD
-
-
-
-
-
 	LEFT_ELBOW
 	LEFT_FOOT
 	LEFT_HAND
@@ -146,56 +141,8 @@ void Compare::JointByJointCostCalculation() {
 		if (JointSelection[i]) {
 
 			//Get the array of positions from both Sample and
-			char *jointName;
-			switch (i) {
-			case 0:
-				jointName = "HEAD";
-				break;
-			case 1:
-				jointName = "NECK";
-				break;
-			case 2:
-				jointName = "L_SHOULDER";
-				break;
-			case 3:
-				jointName = "R_SHOULDER";
-				break;
-			case 4:
-				jointName = "L_ELBOW";
-				break;
-			case 5:
-				jointName = "R_ELBOW";
-				break;
-			case 6:
-				jointName = "L_HAND";
-				break;
-			case 7:
-				jointName = "R_HAND";
-				break;
-			case 8:
-				jointName = "TORSO";
-				break;
-			case 9:
-				jointName = "L_HIP";
-				break;
-			case 10:
-				jointName = "R_HIP";
-				break;
-			case 11:
-				jointName = "L_KNEE";
-				break;
-			case 12:
-				jointName = "R_KNEE";
-				break;
-			case 13:
-				jointName = "L_FOOT";
-				break;
-			case 14:
-				jointName = "R_FOOT";
-				break;
-			default: //Optional
-				jointName = "UNKNOWN";
-			}
+			char *jointName = Int2JointIndexing(i);
+			
 
 			char* prefix = "Joint_";
 			char* postfix = ".bin";
@@ -217,11 +164,18 @@ void Compare::JointByJointCostCalculation() {
 				GetLogDimensions(finalnGTdir, rowsGT, cols);
 				//float **theGTArray;
 				//2nd initialize a matrix with the dimensions
+
+				cout << "rowsGT: " << *rowsGT << endl;
+				cout << "colsGT: " << *cols << endl;
 				theGTArray = new float*[*rowsGT];
-				for (int i = 0; i < *rowsGT; ++i)
+				for (int i = 0; i < *rowsGT; ++i) {
 					theGTArray[i] = new float[*cols];
+					for (int j = 0; j < *cols; j++) {
+						theGTArray[i][j] = 0;
+					}
+				}
 				//3rd get the array values
-				ReadFrameRegisterToArray(finalnGTdir, theGTArray);
+				ReadFrameRegisterToArray(finalnGTdir, theGTArray, true);
 
 			}
 			else {
@@ -232,7 +186,7 @@ void Compare::JointByJointCostCalculation() {
 
 
 			// Samples
-			strcpy_s(finalnSamplesdir, pathSGTFile);
+			strcpy_s(finalnSamplesdir, pathSampleFile);
 			strcat_s(finalnSamplesdir, prefix);
 			strcat_s(finalnSamplesdir, jointName);
 			strcat_s(finalnSamplesdir, postfix);
@@ -244,12 +198,20 @@ void Compare::JointByJointCostCalculation() {
 				//1st get dimensions
 				GetLogDimensions(finalnSamplesdir, rowsSamples, cols);
 				//float **theSamplesArray;
+				cout <<"rowsSamples: " << *rowsSamples << endl;
+				cout << "colsSamples: " << *cols << endl;
 				//2nd initialize a matrix with the dimensions
 				theSamplesArray = new float*[*rowsSamples];
-				for (int i = 0; i < *rowsSamples; ++i)
+				for (int i = 0; i < *rowsSamples; ++i) {
 					theSamplesArray[i] = new float[*cols];
+					for (int j = 0; j < *cols; j++) {
+						theSamplesArray[i][j] = 0;
+					}
+				}
+
+				
 				//3rd get the array values
-				ReadFrameRegisterToArray(finalnSamplesdir, theSamplesArray);
+				ReadFrameRegisterToArray(finalnSamplesdir, theSamplesArray,true);
 
 			}
 			else {
@@ -260,7 +222,7 @@ void Compare::JointByJointCostCalculation() {
 			// Once both files are loaded proceed to do the comparison between arrays
 			dtw3d* DTWObject = new dtw3d(theGTArray, theSamplesArray, *rowsGT, *rowsSamples);
 			Cost += DTWObject->theCost;
-			delete DTWObject;
+			//delete DTWObject;  //dESTRUCTOR HAS TO BE MORE Complex
 		}
 	}
 		 
@@ -272,116 +234,6 @@ void Compare::JointByJointCostCalculation() {
 
 
 
-/***ReadFrameRegisterToArray:************************************
-Read all the frame positions recorded in a file. All the frame positions will be stored in an array
-that is easy to work with.
-******************************************************************/
-void Compare::ReadFrameRegisterToArrays(char* nameFile, float ** theMatrix) {
-
-	string  line;
-	bool firstLine = true;
-	bool error = false;
-	int row, col = 0;
-	int rowCount = 0, colCount = 0;
-
-	float **theArray;
-	// Needs to be initialized to avoid error?
-
-	theArray = new float*[rowCount];
-	for (int i = 0; i < rowCount; ++i)
-		theArray[i] = new float[colCount];
-
-	ifstream outfile(nameFile);
-	while (std::getline(outfile, line))
-	{
-		//cout << line << endl;
-		std::stringstream   linestream(line);
-		std::string         data;
-
-
-		// First line in the doc - HAPPENS ONLY ONCE
-		if (firstLine) {
-			//std::getline(linestream, data);
-			bool onetime = true;
-			while (getline(linestream, data, ';')) {
-				//linestream >> frames;
-				if (onetime) {
-					rowCount = stoi(data);
-					//theRowCount = rowCount;
-					/*
-					if (sizeof(theMatrix) == rowCount) {
-					cout << "ERROR, Dimensions do not fit";
-					error = true;
-					}
-					*/
-					onetime = false;
-				}
-				else {
-					colCount = stoi(data);
-					//theColcount = colCount;
-					/*
-					if (sizeof(theMatrix[0]) == colCount) {
-					cout << "ERROR, Dimensions do not fit";
-					error = true;
-					}
-					*/
-
-					/*
-					colCount = stoi(data);
-					theArray = new float*[rowCount];
-					for (int i = 0; i < rowCount; ++i)
-					theArray[i] = new float[colCount];
-					*/
-					theArray = new float*[rowCount];
-					for (int i = 0; i < rowCount; ++i)
-						theArray[i] = new float[colCount];
-				}
-
-			}
-			if (error) {
-				cout << "Exiting ReadFrameRegisterToArray()";
-				break;
-			}
-
-
-			firstLine = false;
-			cout << "firstLine passed" << endl;
-		}
-		else {
-			row = 0;
-			while (getline(linestream, data, ';')) {
-				//linestream >> type;
-
-				theArray[row][col] = stof(data);
-				cout << row << endl;
-				row++;
-			}
-
-			if (rowCount - 1 == row) {
-				cout << rowCount << "   reached end of " << endl;
-				break;
-			}
-			cout << col << endl;
-			col++;
-
-			//cout << col << endl;
-		}
-	}
-
-
-	for (int i = 0; i < rowCount; i++)
-		for (int j = 0; j < colCount; j++)
-			theMatrix[i][j] = theArray[i][j];
-
-	if (!outfile.eof())
-	{
-		cerr << "Error in reading file!\n";
-	}
-	outfile.close();
-	cout << "finished   " << theMatrix[1][1] << endl;
-	//return theArray;
-
-}
 
 /***GetLogDimensions:***************************************
 Read a whole set of joints allocated in the same frame
@@ -515,93 +367,3 @@ bool Compare::checkFileExistence(const char* name) {
 
 
 
-
-/***ReadFrameRegisterToArray:************************************
-Read all the frame positions recorded in a file. All the frame positions will be stored in an array
-that is easy to work with.
-
-Inputs:
-	-	declared float array
-	-	declared float array
-******************************************************************/
-void Compare::ReadFrameRegisterToArray(char* nameFile, float ** theMatrix) {
-
-	string  line;
-	bool firstLine = true;
-	bool error = false;
-	int row = 0;
-	int col = 0;
-	int rowCount = 0, colCount = 0;
-
-	float **theArray;
-	// Needs to be initialized to avoid error?
-	theArray = new float*[rowCount];
-	for (int i = 0; i < rowCount; ++i)
-		theArray[i] = new float[colCount];
-
-	cout << "Reading now:  "<< nameFile << endl;
-	ifstream outfile(nameFile);
-	while (std::getline(outfile, line))
-	{
-		//cout << line << endl;
-		std::stringstream   linestream(line);
-		std::string         data;
-
-
-		// First line in the doc - HAPPENS ONLY ONCE
-		if (firstLine) {
-			//std::getline(linestream, data);
-			bool onetime = true;
-			while (getline(linestream, data, ';')) {
-				//linestream >> frames;
-				if (onetime) {
-					rowCount = stoi(data);
-					if (sizeof(theMatrix) == rowCount) {
-						cout << "ERROR, Dimensions do not fit";
-						error = true;
-					}
-					onetime = false;
-				}
-				else {
-					colCount = stoi(data);
-					if (sizeof(theMatrix[0]) == colCount) {
-
-						cout << "ERROR, Dimensions do not fit";
-						error = true;
-					}
-
-				}
-			}
-			if (error) {
-				cout << "Exiting ReadFrameRegisterToArray()";
-				break;
-			}
-
-
-			firstLine = false;
-			cout << "firstLine passed" << endl;
-		}
-		else {
-			row = 0;
-			while (getline(linestream, data, ';')) {
-				//linestream >> type;
-				//cout << row << "--" << col << endl;
-				theMatrix[row][col] = stof(data);
-				row++;
-
-			}
-			col++;
-			//cout << col << endl;
-		}
-	}
-
-
-	if (!outfile.eof())
-	{
-		cerr << "Error in reading file!\n";
-	}
-	outfile.close();
-	cout << "finished   " << theMatrix[1][1] << endl;
-	//return theArray;
-
-}

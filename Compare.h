@@ -15,8 +15,12 @@
 #include <vector>
 #include <sstream>
 #include "DTW3d.h"
+#include "RecordLog.h"
 
 using namespace std;
+
+
+//void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix);
 
 class Compare
 {
@@ -28,10 +32,10 @@ public:
 	bool GetJointSelection();
 	void exitComparation();
 	bool checkFileExistence(const char* name);
-	void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix);
+	
 	void JointByJointCostCalculation();
 	void GetLogDimensions(char* nameFile, int * rows, int* cols);
-	void ReadFrameRegisterToArrays(char* nameFile, float ** theMatrix);
+	//void ReadFrameRegisterToArrays(char* nameFile, float ** theMatrix);
 
 private:
 	float Cost;

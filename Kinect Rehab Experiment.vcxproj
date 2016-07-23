@@ -25,6 +25,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RecordLog.cpp" />
     <ClCompile Include="SequentialUserCapture.cpp" />
+    <ClCompile Include="AdditionalFunctions.cpp" />
     <ClCompile Include="Spline.cpp" />
     <ClCompile Include="Viewer.cpp" />
   </ItemGroup>
