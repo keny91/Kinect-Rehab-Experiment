@@ -596,17 +596,17 @@ void RecordLog::GetLogDimensions(char* nameFile, int * rows, int* cols, bool alt
 					thirdTime = true;
 				}
 				else if (thirdTime) {
-					theRelativePoint.x = stoi(data);
+					theRelativePoint.x = stof(data);
 					thirdTime = false;
 					fouthTime = true;
 				}
 				else if (fouthTime) {
-					theRelativePoint.y = stoi(data);
+					theRelativePoint.y = stof(data);
 					fouthTime = false;
 					fifthTime = true;
 				}
 				else if (fifthTime) {
-					theRelativePoint.z = stoi(data);
+					theRelativePoint.z = stof(data);
 					fifthTime = false;
 				}
 				else {
@@ -617,14 +617,16 @@ void RecordLog::GetLogDimensions(char* nameFile, int * rows, int* cols, bool alt
 
 		}
 		else{
-		//linestream >> frames;
-			if (onetime) {
-				*rows = stoi(data);
-				onetime = false;
-			}
-			else {
-				*cols = stoi(data);
+			while (getline(linestream, data, ';')) {
+				//linestream >> frames;
+				if (onetime) {
+					*rows = stoi(data);
+					onetime = false;
+				}
+				else {
+					*cols = stoi(data);
 
+				}
 			}
 		}
 	

@@ -48,7 +48,7 @@ public:
 	//void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix); 
 	void EndReading();
 	void SeparateSingleJoint(JointType theType, char * directory, Point3f theRelativePoint, bool recordPostFix, bool recordPosition, bool recordOrientation, bool recordConfidence);
-	void GetLogDimensions(char* nameFile, int * rows, int* cols, bool alt = true);
+	void GetLogDimensions(char* nameFile, int * rows, int* cols, bool alt = false);
 	void CreateGestureLog(char* FileName, bool GT, Point3f RelativePoint);
 	void EnableRecordingOfJoint(JointType theType);
 	void DisableRecordingOfJoint(JointType theType);
