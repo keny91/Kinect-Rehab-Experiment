@@ -8,6 +8,8 @@ Release/
 x64/
 OpenNI2/
 NiTE2/
+GT/
+Samples/
 
 # User-specific files
 *.suo
@@ -31,8 +33,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 
-GT/
-Samples/
+
 
 # Visual Studio 2015 cache/options directory
 .vs/
