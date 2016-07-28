@@ -64,6 +64,7 @@ void Compare::makeComparison(char* nameSampleFile, char* nameGTFile) {
 	strcat_s(finalname, dataFile);
 	//strcat_s(finalname, jointName);
 	checkSample = Compare::checkFileExistence(finalname);
+	/**/
 	if (checkSample) {
 		SampleFile = ifstream(finalname);
 		cout << "the Samples file exists " << checkSample << endl;
@@ -145,7 +146,7 @@ void Compare::JointByJointCostCalculation() {
 			
 
 			char* prefix = "Joint_";
-			char* postfix = ".bin";
+			char* postfix = "Alt.bin";
 
 			char finalnGTdir[200];
 			char finalnSamplesdir[200];

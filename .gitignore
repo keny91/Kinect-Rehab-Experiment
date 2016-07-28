@@ -266,3 +266,6 @@ NiteSampleUtilities.h
 *.ini
 com.primesense.nite.jar
 *.jar
+*.bin
+*.bin
+*.txt

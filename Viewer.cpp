@@ -74,7 +74,7 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	rowCount = new int();
 	colCount = new int();
 	char* aTestName = "./Samples/CompareSample1/Joint_HEAD.bin";
-	theRecording->GetLogDimensions(aTestName, rowCount, colCount);
+	theRecording->GetLogDimensions(aTestName, rowCount, colCount, false);
 
 	float **theArray;
 	//cout << rowCount << endl;
@@ -91,10 +91,12 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	
 
 	ReadFrameRegisterToArray(aTestName, theArray,true);  // THIS CAUSES RANDOM CRASHES
-	cout << "===================\nArray Stored\n===================" << endl;
+	//cout << "===================\nArray Stored\n===================" << endl;
 																  //cout << "finished outside  " << theArray[1][1] << endl;
-	theRecording->EnableRecordingOfJoint(JOINT_HEAD);
-	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_FOOT);
+	//theRecording->EnableRecordingOfJoint(JOINT_HEAD);
+	//theRecording->EnableRecordingOfJoint(JOINT_RIGHT_FOOT);
+	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_SHOULDER);
+	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_ELBOW);
 	theRecording->EnableRecordingOfJoint(JOINT_RIGHT_HAND);
 	//theRecording->CreateGestureLog("ExampleSamples", false);
 	//cout << testarray[0][0];
@@ -561,7 +563,7 @@ void SampleViewer::Display()
 						theRecording->StopRecording();
 						//theRecording->SeparateSingleJoint(JOINT_LEFT_HAND,directory ,false,true, false,false);
 						Point3f relativePosition = users[i].getSkeleton().getJoint(nite::JOINT_LEFT_SHOULDER).getPosition();
-						theRecording->CreateGestureLog("CompareSample1", true, relativePosition);
+						theRecording->CreateGestureLog("ComplexRightGesture", true, relativePosition);
 						//On stop recording Create new Logs -> Evaluation process
 					}
 				}

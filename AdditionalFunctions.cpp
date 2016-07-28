@@ -56,17 +56,17 @@ void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix, bool alt) {
 						thirdTime = true;
 					}
 					else if (thirdTime) {
-						theRelativePoint.x = stoi(data);
+						theRelativePoint.x = stof(data);
 						thirdTime = false;
 						fouthTime = true;
 					}
 					else if (fouthTime) {
-						theRelativePoint.y = stoi(data);
+						theRelativePoint.y = stof(data);
 						fouthTime = false;
 						fifthTime = true;
 					}
 					else if (fifthTime) {
-						theRelativePoint.z = stoi(data);
+						theRelativePoint.z = stof(data);
 						fifthTime = false;
 					}
 					else {
@@ -110,11 +110,11 @@ void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix, bool alt) {
 				//linestream >> type;
 
 				theMatrix[row][col] = stof(data);
-				cout << theMatrix[row][col] << "----";
+				//cout << theMatrix[row][col] << "----";
 				row++;
 			}
 
-			cout << endl;
+			//cout << endl;
 
 			if (rowCount - 1 == row) {
 				cout << rowCount << "   reached end of " << endl;
@@ -127,18 +127,13 @@ void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix, bool alt) {
 		}
 	}
 
-	/*
-	for (int i = 0; i < rowCount; i++)
-	for (int j = 0; j < colCount ; j++)
-	theMatrix[i][j] = theArray[i][j];
-	*/
 	if (!outfile.eof())
 	{
 		cerr << "Error in reading file!\n";
 	}
 	outfile.close();
 	//cout << "finished   " << theMatrix[1][1]  <<endl;
-	//return theArray;
+
 }
 
 
