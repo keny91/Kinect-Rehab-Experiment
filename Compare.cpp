@@ -8,6 +8,7 @@ Compare::Compare() {
 
 Compare::Compare(char* nameSampleFile, char* nameGTFile) {
 	Cost = 0;
+	//ReferenceMeasure = refValue;
 	makeComparison(nameSampleFile, nameGTFile);
 	JointByJointCostCalculation();
 }
@@ -159,10 +160,12 @@ void Compare::JointByJointCostCalculation() {
 
 			int* cols = new int();
 			int * rowsGT = new int();
+			float *ReferenceMeasureGT = new float();
+			Point3f RelativePointGT;
 			if (checkFileExistence(finalnGTdir)) {
 				// If file found
 				//1st get dimensions
-				GetLogDimensions(finalnGTdir, rowsGT, cols);
+				GetLogDimensions(finalnGTdir, rowsGT, cols, RelativePointGT, ReferenceMeasureGT);
 				//float **theGTArray;
 				//2nd initialize a matrix with the dimensions
 
@@ -194,10 +197,12 @@ void Compare::JointByJointCostCalculation() {
 
 //			int* cols = NULL;
 			int * rowsSamples = new int();
-
+			float *ReferenceMeasureSamples = new float();
+			
+			Point3f RelativePointSamples;
 			if (checkFileExistence(finalnGTdir)) {
 				//1st get dimensions
-				GetLogDimensions(finalnSamplesdir, rowsSamples, cols);
+				GetLogDimensions(finalnSamplesdir, rowsSamples, cols, RelativePointSamples, ReferenceMeasureSamples);
 				//float **theSamplesArray;
 				cout <<"rowsSamples: " << *rowsSamples << endl;
 				cout << "colsSamples: " << *cols << endl;
@@ -225,7 +230,7 @@ void Compare::JointByJointCostCalculation() {
 			Cost += DTWObject->theCost;
 			//delete DTWObject;  //dESTRUCTOR HAS TO BE MORE Complex
 		}
-	}
+	} //all cost calculated
 		 
 
 
@@ -239,7 +244,7 @@ void Compare::JointByJointCostCalculation() {
 /***GetLogDimensions:***************************************
 Read a whole set of joints allocated in the same frame
 ******************************************************************/
-void Compare::GetLogDimensions(char* nameFile, int * rows, int* cols) {
+void Compare::GetLogDimensions(char* nameFile, int * rows, int* cols, Point3f theRelativePoint, float* RelativeDistance) {
 
 	ifstream outfile(nameFile);
 	string  line;
@@ -247,6 +252,11 @@ void Compare::GetLogDimensions(char* nameFile, int * rows, int* cols) {
 	getline(outfile, line);
 	std::stringstream   linestream(line);
 	bool onetime = true;
+	bool secondtime = false;
+	bool thirdTime = false;
+	bool fouthTime = false;
+	bool fifthTime = false;
+	bool sixthTime = false;
 	//cout << line << endl;
 
 	while (getline(linestream, data, ';')) {
@@ -254,9 +264,34 @@ void Compare::GetLogDimensions(char* nameFile, int * rows, int* cols) {
 		if (onetime) {
 			*rows = stoi(data);
 			onetime = false;
+			secondtime = true;
+
+		}
+		else if (secondtime) {
+			*cols = stoi(data);
+			secondtime = false;
+			thirdTime = true;
+		}
+		else if (thirdTime) {
+			theRelativePoint.x = stof(data);
+			thirdTime = false;
+			fouthTime = true;
+		}
+		else if (fouthTime) {
+			theRelativePoint.y = stof(data);
+			fouthTime = false;
+			fifthTime = true;
+		}
+		else if (fifthTime) {
+			theRelativePoint.z = stof(data);
+			fifthTime = false;
+			sixthTime = true;
+		}
+		else if (sixthTime) {
+			*RelativeDistance = stof(data);
+			sixthTime = false;
 		}
 		else {
-			*cols = stoi(data);
 
 		}
 	}
@@ -368,3 +403,10 @@ bool Compare::checkFileExistence(const char* name) {
 
 
 
+void Compare::GetReferenceMeasure(float value) {
+	//ReferenceMeasure = value;
+}
+
+void Compare::ApplyReferenceMeasure() {
+	//Cost = Cost/ ReferenceMeasure;
+}

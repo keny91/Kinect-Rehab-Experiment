@@ -41,6 +41,7 @@ void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix, bool alt) {
 				bool thirdTime = false;
 				bool fouthTime = false;
 				bool fifthTime = false;
+				bool sixthTime = false;
 				
 				while (getline(linestream, data, ';')) {
 					//linestream >> frames;
@@ -68,9 +69,14 @@ void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix, bool alt) {
 					else if (fifthTime) {
 						theRelativePoint.z = stof(data);
 						fifthTime = false;
+						sixthTime = true;
+					}
+					else if (sixthTime) {
+						//theRelativePoint.z = stof(data);
+						sixthTime = false;
 					}
 					else {
-						
+
 					}
 				}
 				if (error) {
@@ -198,6 +204,24 @@ char* Int2JointIndexing(int integerValue) {
 
 
 
+float dist(float x, float y) {
+	return sqrt(pow((x - y), 2));
+}
+
+//double dtw3d::distV2(std::vector<double>&  V1, std::vector<double>& V2) {
+float distance3f(Point3f V1, Point3f V2) {
+	//int m = V1.size();
+	//int n = V2.size();
+
+	float dist1 = dist(V1.x, V2.x);
+	float dist2 = dist(V1.y, V2.y);
+	float dist3 = dist(V1.z, V2.z);
+	//double* costs = new double[sizeLenght];
+	
+	return sqrt(pow((dist1), 2) + pow((dist2), 2) + pow((dist3), 2));
+}
+
+
 /***GetRelativePosition:************************************
 Get the relative position vector from a joint to another
 ******************************************************************/
@@ -211,3 +235,4 @@ Point3f GetRelativePosition(Point3f Origin, Point3f Target = Point3f(0, 0, 0)) {
 	coordinates.set(x, y, z);
 	return coordinates;
 }
+

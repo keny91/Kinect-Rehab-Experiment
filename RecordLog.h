@@ -24,10 +24,13 @@ using namespace std;
 using namespace nite;
 
 //Additional Functions in AdditionalFunctions.cpp
+float dist(float x, float y);
+float distance3f(Point3f V1, Point3f V2);
 bool checkFileExistence(const char* name);
 char *Int2JointIndexing(int n);
 Point3f GetRelativePosition(Point3f Origin, Point3f Target);
-void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix, bool alt);
+void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix, bool alt=true);
+float ReadFrameRelativeReference(char* nameFile, bool alt=true);
 //float GetDistanceBetweenJoints(nite::SkeletonJoint JointA, nite::SkeletonJoint JointB);
 
 class RecordLog
@@ -43,7 +46,7 @@ public:
 	void StopRecording();
 	void InsertRegisterSkeleton(Skeleton theSkeleton, int frameint, int BodyID);
 	//void InsertRegisterNTSkeleton(NTSkeleton theSkeleton);
-
+	void GetReferenceMeasure(Skeleton theSkeleton, int mode);
 	void StartReading();
 	//void ReadFrameRegisterToArray(char* nameFile, float ** theMatrix); 
 	void EndReading();
@@ -57,6 +60,7 @@ public:
 
 private:
 	void RecordLog::InitFolders();
+	float ReferenceMeasure;
 	fstream theFile;
 	char*name;
 	bool * JointSelection;

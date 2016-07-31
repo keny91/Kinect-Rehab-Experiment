@@ -34,8 +34,10 @@ public:
 	bool checkFileExistence(const char* name);
 	
 	void JointByJointCostCalculation();
-	void GetLogDimensions(char* nameFile, int * rows, int* cols);
+	void GetLogDimensions(char* nameFile, int * rows, int* cols, Point3f theRelativePoint, float* RelativeDistance );
 	//void ReadFrameRegisterToArrays(char* nameFile, float ** theMatrix);
+	void GetReferenceMeasure(float value);
+	void ApplyReferenceMeasure();
 
 private:
 	float Cost;
@@ -47,6 +49,8 @@ private:
 	bool inProcess;
 	ifstream GTFile;
 	ifstream SampleFile;
+	
+
 	// other possible values here
 };
 

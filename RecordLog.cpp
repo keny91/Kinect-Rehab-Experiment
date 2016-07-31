@@ -218,6 +218,50 @@ void RecordLog::InsertRegisterSkeleton(Skeleton theSkeleton, int frame, int Body
 
 
 
+
+/***GetReferenceMeasure:************************************
+Similar process to InsertRegisterSkeleton but adapted to
+a different class input.
+*******************************************************************/
+void RecordLog::GetReferenceMeasure(Skeleton theSkeleton, int mode) {
+	Point3f JointPosition1;
+	Point3f JointPosition2;
+	Point3f JointPosition3;
+	float dist1;
+	float dist2;
+
+	switch(mode) {
+		//arm measure
+	case 0:
+		JointPosition1=theSkeleton.getJoint(JOINT_LEFT_SHOULDER).getPosition();
+		JointPosition2 = theSkeleton.getJoint(JOINT_LEFT_ELBOW).getPosition();
+		JointPosition3 = theSkeleton.getJoint(JOINT_LEFT_HAND).getPosition();
+		break;
+		//leg measure
+	case 1:
+		JointPosition1 = theSkeleton.getJoint(JOINT_LEFT_HIP).getPosition();
+		JointPosition2 = theSkeleton.getJoint(JOINT_LEFT_KNEE).getPosition();
+		JointPosition3 = theSkeleton.getJoint(JOINT_LEFT_FOOT).getPosition();
+		break;
+
+		//heigh measure
+	case 3:
+
+		break;
+
+	default:
+		JointPosition1 = theSkeleton.getJoint(JOINT_LEFT_SHOULDER).getPosition();
+		JointPosition2 = theSkeleton.getJoint(JOINT_LEFT_ELBOW).getPosition();
+		JointPosition3 = theSkeleton.getJoint(JOINT_LEFT_HAND).getPosition();
+		break;
+
+	}
+
+	dist1 = distance3f(JointPosition1, JointPosition2);
+	dist2 = distance3f(JointPosition2, JointPosition3);
+	ReferenceMeasure = dist1 + dist2;
+}
+
 /***InsertRegisterNTSkeleton:************************************
 Similar process to InsertRegisterSkeleton but adapted to
 a different class input.
@@ -470,7 +514,7 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory , Point3f
 				//std::getline(linestream, data);
 				linestream >> frames;
 				infile << frames << ";" << numColumns << endl;
-				infileAlt << frames << ";" << numColumns << ";" << theRelativePoint.x << ";" << theRelativePoint.y << ";" << theRelativePoint.z << endl;
+				infileAlt << frames << ";" << numColumns << ";" << theRelativePoint.x << ";" << theRelativePoint.y << ";" << theRelativePoint.z << ";" << ReferenceMeasure << endl;
 				//cout << frames << "HAPPENS ONLY ONCE" << endl;
 				firstLine = false;
 			}
@@ -503,7 +547,7 @@ void RecordLog::SeparateSingleJoint(JointType theType, char* directory , Point3f
 						//Point3f oriPosition = Point3f(frameInfo[0], frameInfo[1], frameInfo[2]);
 						Point3f finalPosition = Point3f(frameInfo[0], frameInfo[1], frameInfo[2]);
 						Point3f relativePosition = GetRelativePosition(theRelativePoint, finalPosition);
-						infileAlt << relativePosition.x << ";" << relativePosition.y << ";" << relativePosition.z;
+						infileAlt << (relativePosition.x)*100/ReferenceMeasure << ";" << relativePosition.y * 100 / ReferenceMeasure << ";" << relativePosition.z * 100 / ReferenceMeasure;
 						}
 						if (recordOrientation) {
 							if (recordPosition) {

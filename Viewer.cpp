@@ -67,7 +67,7 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	
 
 	//float**testarray;
-	theComparator = new Compare("CompareSample1", "CompareSample1");
+	//theComparator = new Compare("RightArmGestureLuis100", "RightArmGestureLuis100");
 	
 
 	int * rowCount, *colCount;
@@ -90,7 +90,7 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 		
 	
 
-	ReadFrameRegisterToArray(aTestName, theArray,true);  // THIS CAUSES RANDOM CRASHES
+	//ReadFrameRegisterToArray(aTestName, theArray,true);  // THIS CAUSES RANDOM CRASHES
 	//cout << "===================\nArray Stored\n===================" << endl;
 																  //cout << "finished outside  " << theArray[1][1] << endl;
 	//theRecording->EnableRecordingOfJoint(JOINT_HEAD);
@@ -562,8 +562,9 @@ void SampleViewer::Display()
 
 						theRecording->StopRecording();
 						//theRecording->SeparateSingleJoint(JOINT_LEFT_HAND,directory ,false,true, false,false);
+						theRecording->GetReferenceMeasure(users[i].getSkeleton(), 1);
 						Point3f relativePosition = users[i].getSkeleton().getJoint(nite::JOINT_LEFT_SHOULDER).getPosition();
-						theRecording->CreateGestureLog("ComplexRightGesture", true, relativePosition);
+						theRecording->CreateGestureLog("ArmExtensionHorizontalBAD", false, relativePosition);
 						//On stop recording Create new Logs -> Evaluation process
 					}
 				}
