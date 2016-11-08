@@ -67,14 +67,16 @@ SampleViewer::SampleViewer(const char* strSampleName) : m_poseUser(0)
 	
 
 	//float**testarray;
-	//theComparator = new Compare("RightArmGestureLuis100", "RightArmGestureLuis100");
 	
+	aName = "DimitrisBad";
+	theComparator = new Compare("DimitrisBad", "DimitrisGood");
+
 
 	int * rowCount, *colCount;
 	rowCount = new int();
 	colCount = new int();
-	char* aTestName = "./Samples/CompareSample1/Joint_HEAD.bin";
-	theRecording->GetLogDimensions(aTestName, rowCount, colCount, false);
+	//char* aTestName = "./Samples/CompareSample1/Joint_HEAD.bin";
+	//theRecording->GetLogDimensions(aTestName, rowCount, colCount, false);
 
 	float **theArray;
 	//cout << rowCount << endl;
@@ -564,7 +566,7 @@ void SampleViewer::Display()
 						//theRecording->SeparateSingleJoint(JOINT_LEFT_HAND,directory ,false,true, false,false);
 						theRecording->GetReferenceMeasure(users[i].getSkeleton(), 1);
 						Point3f relativePosition = users[i].getSkeleton().getJoint(nite::JOINT_LEFT_SHOULDER).getPosition();
-						theRecording->CreateGestureLog("ArmExtensionHorizontalBAD", false, relativePosition);
+						theRecording->CreateGestureLog(aName, false, relativePosition);
 						//On stop recording Create new Logs -> Evaluation process
 					}
 				}

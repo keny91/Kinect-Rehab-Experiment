@@ -20,6 +20,7 @@ using namespace std;
 class SampleViewer
 {
 public:
+	char* aName;
 	SampleViewer(const char* strSampleName);
 	virtual ~SampleViewer();
 	RecordLog* theRecording;
